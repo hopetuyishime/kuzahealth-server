@@ -1,5 +1,7 @@
 package rw.ac.auca.kuzahealth.core.visitnote.entity;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
@@ -20,7 +22,7 @@ public class VisitNote extends BaseEntity {
     private String observation;
     private String vitalSigns; // Use appropriate type for JSON-like structure
     private String recommendations;
-    private String attachments;
+    private List<String> attachments;
  @ManyToOne
     @JoinColumn(name = "visit_id", nullable = false) // Specify the foreign key column
     @JsonBackReference // This will be the back reference

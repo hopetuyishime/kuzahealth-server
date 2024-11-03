@@ -12,7 +12,7 @@ import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.service.HealthWorkerService;
 
 @RestController
-@RequestMapping("/api/users/healthworker")
+@RequestMapping("/api/health-workers")
 public class HealthWorkerController {
 
     private final HealthWorkerService healthWorkerService;

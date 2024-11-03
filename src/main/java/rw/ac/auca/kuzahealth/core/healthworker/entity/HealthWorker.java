@@ -30,7 +30,7 @@ public class HealthWorker extends BaseEntity {
 
     // Inside HealthWorker class
     @OneToMany(mappedBy = "healthWorker")
-   @JsonManagedReference 
+    @JsonManagedReference
     private List<Visit> visits;
 
 }
