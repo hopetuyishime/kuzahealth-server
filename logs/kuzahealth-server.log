@@ -2,7 +2,7 @@
 2024-11-04T16:53:21.855+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] r.a.a.k.KuzahealthServerApplication      : No active profile set, falling back to 1 default profile: "default"
 2024-11-04T16:53:23.368+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
 2024-11-04T16:53:23.368+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.30]
-2024-11-04T16:53:23.415+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2024-11-04T16:53:2d3.415+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
 2024-11-04T16:53:23.569+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
 2024-11-04T16:53:23.621+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
 2024-11-04T16:53:23.650+02:00  INFO 44696 --- [kuzahealth-server] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
