@@ -6,8 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=jdbc:postgresql://aws-0-ca-central-1.pooler.supabase.com:6543/postgres
-      - DB_USERNAME=postgres.pivijyhzrwjisemlrlfz
-      - DB_PASSWORD=tuyishimeKyrie@123
+      - DATABASE_URL=postgres://postgres.pivijyhzrwjisemlrlfz:tuyishimeKyrie%40123@aws-0-ca-central-1.pooler.supabase.com:6543/postgres
     ports:
       - "8080:8080"
