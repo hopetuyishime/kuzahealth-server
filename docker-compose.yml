@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=jdbc:postgresql://aws-0-ca-central-1.pooler.supabase.com:6543/postgres
+      - DB_USERNAME=postgres.pivijyhzrwjisemlrlfz
+      - DB_PASSWORD=tuyishimeKyrie@123
+    ports:
+      - "8080:8080"
