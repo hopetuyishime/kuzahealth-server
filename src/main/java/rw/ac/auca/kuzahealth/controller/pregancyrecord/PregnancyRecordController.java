@@ -1,16 +1,22 @@
-package rw.ac.auca.kuzahealth.core.pregancyrecord.api;
-
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import rw.ac.auca.kuzahealth.core.pregancyrecord.entity.PregnancyRecord;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.service.PregnancyRecordService;
-import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
+package rw.ac.auca.kuzahealth.controller.pregancyrecord;
 
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
+import rw.ac.auca.kuzahealth.core.pregancyrecord.entity.PregnancyRecord;
+import rw.ac.auca.kuzahealth.core.pregancyrecord.service.PregnancyRecordService;
 
 @RestController
 @RequestMapping("/api/pregnancy-records")

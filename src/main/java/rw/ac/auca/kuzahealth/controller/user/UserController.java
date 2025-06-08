@@ -1,4 +1,4 @@
-package rw.ac.auca.kuzahealth.core.user.api;
+package rw.ac.auca.kuzahealth.controller.user;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class UserController {
         logger.info("Registering user: {}", user.getFirstName());
         
         try {
-            userService.registerUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword(), user.getUserType(), user.getPhoneNumber());
+            userService.registerUser(user);
             return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully.");
         } catch (Exception e) {
             logger.error("Error registering user: {}", e.getMessage());

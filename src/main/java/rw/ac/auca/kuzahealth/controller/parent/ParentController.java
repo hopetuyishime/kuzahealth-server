@@ -1,4 +1,4 @@
-package rw.ac.auca.kuzahealth.core.parent.api;
+package rw.ac.auca.kuzahealth.controller.parent;
 
 import java.util.List;
 import java.util.UUID;

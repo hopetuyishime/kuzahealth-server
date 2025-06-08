@@ -1,4 +1,4 @@
-package rw.ac.auca.kuzahealth.core.visit.api;
+package rw.ac.auca.kuzahealth.controller.visit;
 
 import java.util.List;
 import java.util.UUID;

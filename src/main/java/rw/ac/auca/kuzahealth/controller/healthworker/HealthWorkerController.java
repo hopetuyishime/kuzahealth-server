@@ -1,4 +1,4 @@
-package rw.ac.auca.kuzahealth.core.healthworker.api;
+package rw.ac.auca.kuzahealth.controller.healthworker;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
