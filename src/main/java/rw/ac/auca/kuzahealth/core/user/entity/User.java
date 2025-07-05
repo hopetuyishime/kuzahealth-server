@@ -21,10 +21,6 @@ import rw.ac.auca.kuzahealth.utils.BaseEntity;
 @Entity
 @Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
-    // @Id
-    // @GeneratedValue(strategy= GenerationType.IDENTITY)
-    // @Column(updatable = false, nullable = false)
-    // private UUID id;
 
     @Column(nullable = false)
     private String firstName;
@@ -45,12 +41,30 @@ public class User extends BaseEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     private EUserType role;
 
+    @Column(nullable = true)
+    private String gender;
+
+    @Column(nullable = true)
+    private String province;
+
+    @Column(nullable = true)
+    private String district;
+
+    @Column(nullable = true)
+    private String sector;
+
+    @Column(nullable = true)
+    private String date_of_Birth;
+
+    @Column(nullable = true)
+    private String position;
+
     private boolean enabled = true;
 
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(length = 512) // Allow enough space for a token
+    @Column(length = 512)
     private String otp;
 
     @Column(nullable = true)
@@ -58,42 +72,45 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(nullable = true)
     private String resetToken;
-    
+
     @Column(nullable = true)
     private Long resetTokenExpiration;
 
-    // Protected constructor for JPA
     public User() {
     }
 
-    // Private constructor for factory method
     public User(String firstName, String lastName, String email,
-            String password, EUserType role, String phoneNumber, String username, long otpExpirationTime) {
-        // this.id = UUID.randomUUID();
+            String password, String phoneNumber, String username, long otpExpirationTime, String province,
+            String district,  String sector,String date_of_Birth, String position, String gender) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.role = role;
         this.phoneNumber = phoneNumber;
         this.username = username;
         this.otpExpirationTime = otpExpirationTime;
+        this.province = province;
+        this.district = district;
+        this.sector = sector;
+        this.date_of_Birth = date_of_Birth;
+        this.position = position;
+        this.gender = gender;
+        this.role = EUserType.HEALTH_WORKER;
     }
 
-    // Factory method - main way to create a User
-    public static User create(String firstName, String lastName,
-            String email, String password,
-            EUserType role, String phoneNumber, String username, long otpExpirationTime) {
+
+    public static User create(String firstName, String lastName, String email,
+            String password, String phoneNumber, String username, long otpExpirationTime, String province,
+            String district,  String sector,String date_of_Birth, String position, String gender) {
         return new User(
                 firstName,
                 lastName,
                 email,
-                password,
-                role,
-                phoneNumber, username, otpExpirationTime);
+                password, 
+                phoneNumber, username, otpExpirationTime, province, district, sector, date_of_Birth, position, gender);
     }
 
-    // Domain methods
+
     public void updateProfile(String firstName, String lastName, String phoneNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -114,7 +131,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // Implement according to your roles/authorities
+        return Collections.emptyList();
     }
 
     @Override

@@ -3,9 +3,12 @@ package rw.ac.auca.kuzahealth.controller.parent;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import rw.ac.auca.kuzahealth.core.parent.dto.ParentRequest;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.parent.service.ParentServiceImpl;
 import rw.ac.auca.kuzahealth.utils.MessageResponse;
@@ -24,6 +29,7 @@ import rw.ac.auca.kuzahealth.utils.MessageResponse;
 public class ParentController {
 
     private final ParentServiceImpl parentService;
+     private static final Logger logger = LoggerFactory.getLogger(ParentController.class);
 
     @Autowired
     public ParentController(ParentServiceImpl parentService) {
@@ -31,10 +37,14 @@ public class ParentController {
     }
 
     @PostMapping
-    public ResponseEntity<MessageResponse> registerParent(@RequestBody Parent parent) {
-        Parent createdParent = parentService.registerParent(parent);
-        MessageResponse response = new MessageResponse("Parent registered successfully.", HttpStatus.CREATED);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    // @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MessageResponse> registerParent(@RequestBody @Valid ParentRequest parentRequest) {
+        logger.info("Registering parent: {}", parentRequest.getFirstName());
+        parentService.registerParent(parentRequest);
+        return new ResponseEntity<>(
+            new MessageResponse("Parent registered successfully.", HttpStatus.CREATED),
+            HttpStatus.CREATED
+        );
     }
 
     @GetMapping

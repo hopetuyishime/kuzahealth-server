@@ -3,6 +3,7 @@ package rw.ac.auca.kuzahealth.controller.auth.api;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,5 +25,10 @@ public class TestController {
     @GetMapping("/greet")
     public String greet(){
         return "Welcome";
+    }
+     @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String admin() {
+        return "Hello Admin!";
     }
 }
