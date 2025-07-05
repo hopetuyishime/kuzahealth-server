@@ -28,6 +28,7 @@ import rw.ac.auca.kuzahealth.controller.auth.dto.EmailRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.LoginResponse;
 import rw.ac.auca.kuzahealth.controller.auth.dto.OtpResponse;
 import rw.ac.auca.kuzahealth.core.user.entity.User;
+import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
 import rw.ac.auca.kuzahealth.core.user.repository.UserRepository;
 import rw.ac.auca.kuzahealth.security.JwtService;
 
@@ -52,6 +53,8 @@ public class UserService {
 
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         logger.info("Role being saved: {}", user.getRole());
+
+        EUserType role = user.getRole() != null ? user.getRole() : EUserType.HEALTH_WORKER;
         User userData = User.create(
                 user.getFirstName(),
                 user.getLastName(),
@@ -65,8 +68,8 @@ public class UserService {
                 user.getSector(),
                 user.getDate_of_Birth(),
                 user.getPosition(),
-                user.getGender()
-                // user.getRole()
+                user.getGender(),
+                role
                 );
 
         logger.info("Registering user: " + userData.getEmail());

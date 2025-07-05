@@ -21,13 +21,12 @@ public class ParentServiceImpl {
         this.parentRepository = parentRepository;
     }
 
-    public Parent registerParent(ParentRequest request) {
+    public Parent registerParent(Parent request) {
         Parent parent = new Parent();
         parent.setFirstName(request.getFirstName());
         parent.setLastName(request.getLastName());
         parent.setEmail(request.getEmail());
         parent.setPhone(request.getPhone());
-        parent.setAddress(request.getAddress());
         parent.setExpectedDeliveryDate(request.getExpectedDeliveryDate());
         parent.setHighRisk(request.isHighRisk());
         parent.setBloodGroup(request.getBloodGroup());

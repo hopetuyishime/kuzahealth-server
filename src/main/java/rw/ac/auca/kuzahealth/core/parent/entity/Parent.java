@@ -24,14 +24,10 @@ public class Parent extends BaseEntity {
     private String lastName;
     private String email;
     private String phone;
-    private String address;
-
     @Temporal(TemporalType.DATE)
     private Date expectedDeliveryDate;
-
     @Column(name = "high_risk", nullable = false)
     private boolean isHighRisk = false;
-
     private String bloodGroup;
     private String maritalStatus;
     private String emergencyContactNumber;

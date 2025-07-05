@@ -36,9 +36,8 @@ public class ParentController {
         this.parentService = parentService;
     }
 
-    @PostMapping
-    // @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MessageResponse> registerParent(@RequestBody @Valid ParentRequest parentRequest) {
+    @PostMapping("/register")
+    public ResponseEntity<MessageResponse> registerParent(@RequestBody @Valid Parent parentRequest) {
         logger.info("Registering parent: {}", parentRequest.getFirstName());
         parentService.registerParent(parentRequest);
         return new ResponseEntity<>(

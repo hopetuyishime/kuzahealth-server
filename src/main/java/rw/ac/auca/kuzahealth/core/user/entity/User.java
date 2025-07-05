@@ -81,7 +81,7 @@ public class User extends BaseEntity implements UserDetails {
 
     public User(String firstName, String lastName, String email,
             String password, String phoneNumber, String username, long otpExpirationTime, String province,
-            String district,  String sector,String date_of_Birth, String position, String gender) {
+            String district,  String sector,String date_of_Birth, String position, String gender,EUserType role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -101,13 +101,13 @@ public class User extends BaseEntity implements UserDetails {
 
     public static User create(String firstName, String lastName, String email,
             String password, String phoneNumber, String username, long otpExpirationTime, String province,
-            String district,  String sector,String date_of_Birth, String position, String gender) {
+            String district,  String sector,String date_of_Birth, String position, String gender,EUserType role) {
         return new User(
                 firstName,
                 lastName,
                 email,
                 password, 
-                phoneNumber, username, otpExpirationTime, province, district, sector, date_of_Birth, position, gender);
+                phoneNumber, username, otpExpirationTime, province, district, sector, date_of_Birth, position, gender,role);
     }
 
 
