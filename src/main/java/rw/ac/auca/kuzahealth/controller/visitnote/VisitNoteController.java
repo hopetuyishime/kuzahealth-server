@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import rw.ac.auca.kuzahealth.core.visitnote.dto.VisitNoteRequest;
 import rw.ac.auca.kuzahealth.core.visitnote.entity.VisitNote;
 import rw.ac.auca.kuzahealth.core.visitnote.service.VisitNoteService;
 
@@ -29,7 +30,7 @@ public class VisitNoteController {
     }
 
     @PostMapping
-    public ResponseEntity<VisitNote> createVisitNote(@RequestBody VisitNote visitNote) {
+    public ResponseEntity<VisitNote> createVisitNote(@RequestBody VisitNoteRequest visitNote) {
         VisitNote createdVisitNote = visitNoteService.createVisitNote(visitNote);
         return new ResponseEntity<>(createdVisitNote, HttpStatus.CREATED);
     }

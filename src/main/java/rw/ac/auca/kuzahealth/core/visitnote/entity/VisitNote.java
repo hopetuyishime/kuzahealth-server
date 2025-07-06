@@ -4,10 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import rw.ac.auca.kuzahealth.core.visit.entity.Visit;
@@ -20,12 +17,19 @@ import rw.ac.auca.kuzahealth.utils.BaseEntity;
 public class VisitNote extends BaseEntity {
 
     private String observation;
-    private String vitalSigns; // Use appropriate type for JSON-like structure
+
+    @Column(columnDefinition = "TEXT")
+    private String vitalSigns;
+
+    @Column(columnDefinition = "TEXT")
     private String recommendations;
+
+    @ElementCollection
     private List<String> attachments;
- @ManyToOne
-    @JoinColumn(name = "visit_id", nullable = false) // Specify the foreign key column
-    @JsonBackReference // This will be the back reference
+
+    @ManyToOne
+    @JoinColumn(name = "visit_id", nullable = false)
+    @JsonBackReference
     private Visit visit;
 
 }

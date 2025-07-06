@@ -11,6 +11,8 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import rw.ac.auca.kuzahealth.core.infant.Infant;
 import rw.ac.auca.kuzahealth.core.pregancyrecord.entity.PregnancyRecord;
 import rw.ac.auca.kuzahealth.utils.BaseEntity;
 
@@ -40,4 +42,8 @@ public class Parent extends BaseEntity {
 
     @OneToMany
     private List<PregnancyRecord> pregnancyRecord;
+
+    @OneToMany(mappedBy = "mother")
+    @JsonIgnore
+    private List<Infant> infants;
 }

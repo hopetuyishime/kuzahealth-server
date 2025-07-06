@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,10 +43,17 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
 
+    @Value("${mail.from}")
+    private String fromEmail;
+
+    @Value("${mail.password}")
+    private String password;
+
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserService.class);
 
     public User registerUser(User user) {
         logger.info("Registering user with email: {}", user.getEmail());
+        logger.info("User role from request in service: {}", user.getRole());
 
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("User with this email already exists.");
@@ -55,6 +63,8 @@ public class UserService {
         logger.info("Role being saved: {}", user.getRole());
 
         EUserType role = user.getRole() != null ? user.getRole() : EUserType.HEALTH_WORKER;
+        logger.info("Role after null check: {}", role);
+
         User userData = User.create(
                 user.getFirstName(),
                 user.getLastName(),
@@ -72,9 +82,13 @@ public class UserService {
                 role
                 );
 
+        logger.info("User role after create: {}", userData.getRole());
         logger.info("Registering user: " + userData.getEmail());
 
-        return userRepository.save(userData);
+        User savedUser = userRepository.save(userData);
+        logger.info("User role after save: {}", savedUser.getRole());
+
+        return savedUser;
     }
 
     public String verify(User user, String password) {
@@ -160,8 +174,8 @@ public class UserService {
 
     // Dummy method to send OTP via email (implement as needed)
     private String sendOtpViaEmail(String email, String otp) {
-        final String fromEmail = "tuyishimekyrie@gmail.com"; // Replace with your email
-        final String password = "zcyttvobemuzrpar"; // Use app password or token if needed
+//        final String fromEmail = "tuyishimekyrie@gmail.com"; // Replace with your email
+//        final String password = "zcyttvobemuzrpar"; // Use app password or token if needed
 
         // Setup mail server properties
         Properties props = new Properties();
@@ -183,12 +197,27 @@ public class UserService {
             message.setFrom(new InternetAddress(fromEmail));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
             message.setSubject("Your OTP Code");
-            message.setText("Your OTP is: " + otp);
 
-            // Send email
+            String htmlContent = "<html>" +
+                    "<body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;'>" +
+                    "<div style='max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>" +
+                    "<h2 style='color: #333;'>Your OTP Code</h2>" +
+                    "<p>Use the following One-Time Password (OTP) to proceed:</p>" +
+                    "<div style='font-size: 24px; font-weight: bold; color: #007bff; margin: 20px 0;'>" + otp + "</div>" +
+                    "<p>This code will expire in 20 minutes. If you did not request this, please ignore this email.</p>" +
+                    "<hr>" +
+                    "<p style='font-size: 12px; color: #999;'>Thank you,<br/>Your Health App Team</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+
+            message.setContent(htmlContent, "text/html; charset=utf-8");
+
+// Send email
             Transport.send(message);
             System.out.println("OTP email sent successfully to " + email);
             return "OTP sent successfully to " + email;
+
         } catch (MessagingException e) {
             e.printStackTrace();
             System.out.println("Failed to send OTP email.");

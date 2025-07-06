@@ -95,7 +95,7 @@ public class User extends BaseEntity implements UserDetails {
         this.date_of_Birth = date_of_Birth;
         this.position = position;
         this.gender = gender;
-        this.role = EUserType.HEALTH_WORKER;
+        this.role = role; // Use the role parameter instead of hardcoding HEALTH_WORKER
     }
 
 

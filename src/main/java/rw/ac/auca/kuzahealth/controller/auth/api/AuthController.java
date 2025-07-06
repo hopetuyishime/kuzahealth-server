@@ -2,6 +2,9 @@ package rw.ac.auca.kuzahealth.controller.auth.api;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.controller.auth.dto.EmailRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.OtpResponse;
+import rw.ac.auca.kuzahealth.controller.user.UserController;
+import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
+import rw.ac.auca.kuzahealth.core.healthworker.service.HealthWorkerService;
 import rw.ac.auca.kuzahealth.core.user.entity.User;
+import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
 import rw.ac.auca.kuzahealth.core.user.service.UserService;
 import rw.ac.auca.kuzahealth.controller.auth.dto.LoginResponse;
 
@@ -23,11 +30,43 @@ import rw.ac.auca.kuzahealth.controller.auth.dto.LoginResponse;
 public class AuthController {
 
     private final UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
+    @Autowired
+    private HealthWorkerService healthWorkerService;
 
     @PostMapping("/register")
     public ResponseEntity<String> saveUser(@RequestBody User user) {
         try {
-            userService.registerUser(user);
+            User registeredUser = userService.registerUser(user);
+            logger.info("Registered user role: {}", registeredUser.getRole());
+
+            // If the user has the HEALTH_WORKER role, also create a HealthWorker entity
+            if (registeredUser.getRole() == EUserType.HEALTH_WORKER) {
+                logger.info("Creating HealthWorker entity for user with HEALTH_WORKER role");
+
+                HealthWorker healthWorker = new HealthWorker();
+                healthWorker.setFirst_name(registeredUser.getFirstName());
+                healthWorker.setLast_name(registeredUser.getLastName());
+                healthWorker.setEmail(registeredUser.getEmail());
+                healthWorker.setPhone_number(registeredUser.getPhoneNumber());
+
+                // Set the reference to the User entity
+                healthWorker.setUser(registeredUser);
+
+                // Save the HealthWorker entity
+                try {
+                    HealthWorker createdHealthWorker = healthWorkerService.createHealthWorker(healthWorker);
+                    logger.info("HealthWorker created successfully: {}", createdHealthWorker.getId());
+                    return ResponseEntity.status(HttpStatus.CREATED)
+                            .body("User created successfully and registered as a Health Worker.");
+                } catch (Exception e) {
+                    logger.error("Error creating HealthWorker: {}", e.getMessage());
+                    return ResponseEntity.status(HttpStatus.CREATED)
+                            .body("User created successfully but failed to register as a Health Worker: " + e.getMessage());
+                }
+            }
+
             return new ResponseEntity<>("User registered successfully", HttpStatus.CREATED);
         } catch (Exception e) {
             e.printStackTrace();
