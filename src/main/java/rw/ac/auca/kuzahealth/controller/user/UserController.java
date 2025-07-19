@@ -27,7 +27,7 @@ public class UserController {
     @Autowired
     private HealthWorkerService healthWorkerService;
 
-    @PostMapping("/register")
+//    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         logger.info("Registering user: {}", user.getFirstName());
         logger.info("User role from request: {}", user.getRole());

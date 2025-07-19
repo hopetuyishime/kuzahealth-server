@@ -3,6 +3,7 @@ package rw.ac.auca.kuzahealth.controller.visit;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,10 +31,11 @@ public class VisitController {
         this.visitService = visitService;
     }
 
-    @PostMapping("/")
-    public ResponseEntity<Visit> createVisit(@RequestBody VisitRequest visit) {
-        Visit createdVisit = visitService.createVisit(visit);
-        return new ResponseEntity<>(createdVisit, HttpStatus.CREATED);
+
+    @PostMapping
+    public ResponseEntity<Visit> createVisit(@RequestBody @Valid VisitRequest visitRequest) {
+        Visit createdVisit = visitService.createVisit(visitRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdVisit);
     }
 
     @GetMapping("/{id}")
