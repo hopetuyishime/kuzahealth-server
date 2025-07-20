@@ -80,7 +80,7 @@ public class UserService {
                 user.getPosition(),
                 user.getGender(),
                 role
-                );
+        );
 
         logger.info("User role after create: {}", userData.getRole());
         logger.info("Registering user: " + userData.getEmail());
@@ -196,18 +196,97 @@ public class UserService {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(fromEmail));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-            message.setSubject("Your OTP Code");
+            message.setSubject("Verify Your Account - OTP Required");
 
-            String htmlContent = "<html>" +
-                    "<body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;'>" +
-                    "<div style='max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>" +
-                    "<h2 style='color: #333;'>Your OTP Code</h2>" +
-                    "<p>Use the following One-Time Password (OTP) to proceed:</p>" +
-                    "<div style='font-size: 24px; font-weight: bold; color: #007bff; margin: 20px 0;'>" + otp + "</div>" +
-                    "<p>This code will expire in 20 minutes. If you did not request this, please ignore this email.</p>" +
-                    "<hr>" +
-                    "<p style='font-size: 12px; color: #999;'>Thank you,<br/>Your Health App Team</p>" +
+            String htmlContent = "<!DOCTYPE html>" +
+                    "<html lang='en'>" +
+                    "<head>" +
+                    "<meta charset='UTF-8'>" +
+                    "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+                    "<title>Account Verification</title>" +
+                    "</head>" +
+                    "<body style='margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; background-color: #f8fafc; line-height: 1.6;'>" +
+
+                    "<!-- Main Container -->" +
+                    "<table cellpadding='0' cellspacing='0' border='0' width='100%' style='background-color: #f8fafc; padding: 40px 0;'>" +
+                    "<tr>" +
+                    "<td align='center'>" +
+
+                    "<!-- Email Content -->" +
+                    "<table cellpadding='0' cellspacing='0' border='0' width='100%' style='max-width: 600px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); overflow: hidden;'>" +
+
+                    "<!-- Header -->" +
+                    "<tr>" +
+                    "<td style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;'>" +
+                    "<h1 style='color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;'>Account Verification</h1>" +
+                    "<p style='color: #e2e8f0; margin: 8px 0 0 0; font-size: 16px; opacity: 0.9;'>Secure access to your account</p>" +
+                    "</td>" +
+                    "</tr>" +
+
+                    "<!-- Content -->" +
+                    "<tr>" +
+                    "<td style='padding: 50px 40px;'>" +
+                    "<div style='text-align: center; margin-bottom: 40px;'>" +
+                    "<div style='width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; position: relative;'>" +
+                    "<div style='width: 32px; height: 32px; border: 3px solid #ffffff; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;'></div>" +
                     "</div>" +
+                    "</div>" +
+
+                    "<h2 style='color: #1e293b; margin: 0 0 16px 0; font-size: 24px; font-weight: 600; text-align: center;'>Verification Code</h2>" +
+                    "<p style='color: #64748b; margin: 0 0 32px 0; font-size: 16px; text-align: center; line-height: 1.5;'>Enter the following verification code to complete your account setup. This code ensures the security of your account.</p>" +
+
+                    "<!-- OTP Code Box -->" +
+                    "<div style='background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border: 2px solid #e2e8f0; border-radius: 12px; padding: 30px; margin: 32px 0; text-align: center; position: relative; overflow: hidden;'>" +
+                    "<div style='position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);'></div>" +
+                    "<div style='font-size: 36px; font-weight: 700; color: #1e293b; letter-spacing: 8px; font-family: \"Courier New\", Courier, monospace;'>" + otp + "</div>" +
+                    "<p style='color: #64748b; margin: 12px 0 0 0; font-size: 14px;'>Enter this code in the verification field</p>" +
+                    "</div>" +
+
+                    "<!-- Security Info -->" +
+                    "<div style='background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 32px 0;'>" +
+                    "<div style='display: flex; align-items: flex-start;'>" +
+                    "<div style='color: #d97706; margin-right: 12px; font-size: 18px;'>⚠️</div>" +
+                    "<div>" +
+                    "<h4 style='color: #92400e; margin: 0 0 8px 0; font-size: 16px; font-weight: 600;'>Security Notice</h4>" +
+                    "<ul style='color: #92400e; margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.5;'>" +
+                    "<li>This code expires in <strong>20 minutes</strong></li>" +
+                    "<li>Never share this code with anyone</li>" +
+                    "<li>If you didn't request this, please ignore this email</li>" +
+                    "</ul>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>" +
+
+                    "<p style='color: #64748b; margin: 32px 0 0 0; font-size: 14px; text-align: center; line-height: 1.5;'>If you're having trouble with verification, please contact our support team for assistance.</p>" +
+                    "</td>" +
+                    "</tr>" +
+
+                    "<!-- Footer -->" +
+                    "<tr>" +
+                    "<td style='background-color: #f8fafc; padding: 30px 40px; border-top: 1px solid #e2e8f0;'>" +
+                    "<div style='text-align: center;'>" +
+                    "<p style='color: #94a3b8; margin: 0 0 8px 0; font-size: 14px;'>Best regards,</p>" +
+                    "<p style='color: #475569; margin: 0 0 16px 0; font-size: 16px; font-weight: 600;'>Your Health App Team</p>" +
+                    "<div style='border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 20px;'>" +
+                    "<p style='color: #94a3b8; margin: 0; font-size: 12px; line-height: 1.4;'>This is an automated message. Please do not reply to this email.<br/>© 2025 Health App. All rights reserved.</p>" +
+                    "</div>" +
+                    "</div>" +
+                    "</td>" +
+                    "</tr>" +
+
+                    "</table>" +
+                    "</td>" +
+                    "</tr>" +
+                    "</table>" +
+
+                    "<!-- CSS Animation -->" +
+                    "<style>" +
+                    "@keyframes spin {" +
+                    "0% { transform: rotate(0deg); }" +
+                    "100% { transform: rotate(360deg); }" +
+                    "}" +
+                    "</style>" +
+
                     "</body>" +
                     "</html>";
 
