@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("http://localhost:5173","https://kuzahealth.netlify.app/")
                 .allowCredentials(true);
     }
 }
