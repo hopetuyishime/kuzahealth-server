@@ -39,7 +39,7 @@ public class VaccinationController {
 
     /**
      * Create a new vaccination
-     * 
+     *
      * @param request the vaccination request
      * @return the created vaccination
      */
@@ -51,7 +51,7 @@ public class VaccinationController {
 
     /**
      * Get all vaccinations
-     * 
+     *
      * @return list of all vaccinations
      */
     @GetMapping
@@ -62,7 +62,7 @@ public class VaccinationController {
 
     /**
      * Get a vaccination by ID
-     * 
+     *
      * @param id the ID of the vaccination
      * @return the vaccination if found
      */
@@ -74,7 +74,7 @@ public class VaccinationController {
 
     /**
      * Get all vaccinations for a specific infant
-     * 
+     *
      * @param infantId the ID of the infant
      * @return list of vaccinations for the infant
      */
@@ -86,7 +86,7 @@ public class VaccinationController {
 
     /**
      * Get all vaccinations administered by a specific health worker
-     * 
+     *
      * @param healthWorkerId the ID of the health worker
      * @return list of vaccinations administered by the health worker
      */
@@ -98,7 +98,7 @@ public class VaccinationController {
 
     /**
      * Get all vaccinations for infants of a specific parent
-     * 
+     *
      * @param parentId the ID of the parent
      * @return list of vaccinations for infants of the parent
      */
@@ -110,7 +110,7 @@ public class VaccinationController {
 
     /**
      * Get all due vaccinations
-     * 
+     *
      * @param date the date to check against (default is current date)
      * @return list of due vaccinations
      */
@@ -126,7 +126,7 @@ public class VaccinationController {
 
     /**
      * Send notifications for due vaccinations
-     * 
+     *
      * @param date the date to check against (default is current date)
      * @return message with number of notifications sent
      */
@@ -144,8 +144,8 @@ public class VaccinationController {
 
     /**
      * Update a vaccination
-     * 
-     * @param id the ID of the vaccination to update
+     *
+     * @param id      the ID of the vaccination to update
      * @param request the updated vaccination data
      * @return the updated vaccination
      */
@@ -157,7 +157,7 @@ public class VaccinationController {
 
     /**
      * Delete a vaccination
-     * 
+     *
      * @param id the ID of the vaccination to delete
      * @return success message
      */

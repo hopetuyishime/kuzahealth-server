@@ -1,6 +1,7 @@
 package rw.ac.auca.kuzahealth.controller.visit;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
@@ -49,6 +50,12 @@ public class VisitController {
     public ResponseEntity<List<Visit>> getAllVisits() {
         List<Visit> visits = visitService.getAllVisits();
         return new ResponseEntity<>(visits, HttpStatus.OK);
+    }
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<List<Visit>> getAllVisitsByPatientId(@PathVariable UUID patientId) {
+        Optional<List<Visit>> visits = visitService.getVisitByParentId(patientId);
+        return visits.map(visitList -> new ResponseEntity<>(visitList, HttpStatus.OK))
+                     .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PutMapping("/{id}")

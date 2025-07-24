@@ -29,7 +29,7 @@ import rw.ac.auca.kuzahealth.utils.MessageResponse;
 public class ParentController {
 
     private final ParentServiceImpl parentService;
-     private static final Logger logger = LoggerFactory.getLogger(ParentController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ParentController.class);
 
     @Autowired
     public ParentController(ParentServiceImpl parentService) {
@@ -41,8 +41,8 @@ public class ParentController {
         logger.info("Registering parent: {}", parentRequest.getFirstName());
         parentService.registerParent(parentRequest);
         return new ResponseEntity<>(
-            new MessageResponse("Parent registered successfully.", HttpStatus.CREATED),
-            HttpStatus.CREATED
+                new MessageResponse("Parent registered successfully.", HttpStatus.CREATED),
+                HttpStatus.CREATED
         );
     }
 
