@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.controller.auth.dto.EmailRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.OtpResponse;
+import rw.ac.auca.kuzahealth.controller.auth.dto.ResetPasswordRequest;
 import rw.ac.auca.kuzahealth.controller.user.UserController;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.service.HealthWorkerService;
@@ -114,10 +115,9 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password-request")
-    public ResponseEntity<String> resetPasswordRequest(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
+    public ResponseEntity<String> resetPasswordRequest(@RequestBody ResetPasswordRequest request) {
         try {
-            userService.initiatePasswordReset(email);
+            userService.initiatePasswordReset(request);
             return ResponseEntity.ok("Password reset link has been sent to your email.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -125,15 +125,14 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
-        String token = request.get("token");
-        String newPassword = request.get("password");
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
         try {
-            userService.resetPassword(token, newPassword);
-            return ResponseEntity.ok("Password has been reset successfully.");
+            userService.resetPassword(request);
+            return ResponseEntity.ok("Successfully reset your password.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
 }

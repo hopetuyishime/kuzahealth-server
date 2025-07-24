@@ -48,7 +48,7 @@ public class ParentSeeder implements CommandLineRunner {
             parent.setPhone("+25078" + (1000000 + random.nextInt(8999999)));
             parent.setBloodGroup(getRandom(List.of("O+", "A+", "B+", "AB+")));
             parent.setMaritalStatus(getRandom(List.of("Single", "Married", "Widowed")));
-parent.setExpectedDeliveryDate(java.sql.Date.valueOf(LocalDate.now().plusDays(random.nextInt(100) + 30)));
+            parent.setExpectedDeliveryDate(java.sql.Date.valueOf(LocalDate.now().plusDays(random.nextInt(100) + 30)));
             parent.setEmergencyContactFullName("Contact " + lastName);
             parent.setEmergencyContactNumber("+25072" + (1000000 + random.nextInt(8999999)));
             parent.setEmergencyContactRelationship(getRandom(List.of("Husband", "Wife", "Sister", "Brother")));

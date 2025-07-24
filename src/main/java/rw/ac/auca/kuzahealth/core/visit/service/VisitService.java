@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +18,10 @@ import rw.ac.auca.kuzahealth.core.visit.dto.VisitRequest;
 import rw.ac.auca.kuzahealth.core.visit.entity.Visit;
 import rw.ac.auca.kuzahealth.core.visit.repository.VisitRepository;
 import rw.ac.auca.kuzahealth.core.visitnote.entity.VisitNote;
+import rw.ac.auca.kuzahealth.sms.model.SmsRequest;
+import rw.ac.auca.kuzahealth.sms.model.SmsResponse;
+import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
+import rw.ac.auca.kuzahealth.sms.service.SmsService;
 
 @Service
 @AllArgsConstructor
@@ -25,6 +30,7 @@ public class VisitService {
     private final VisitRepository visitRepository;
     private final HealthWorkerRepository healthWorkerRepository;
     private final ParentRepository parentRepository;
+    private final PindoSmsService smsService;
 
     public Visit createVisit(VisitRequest request) {
         Visit visit = new Visit();
@@ -59,13 +65,25 @@ public class VisitService {
             }).toList();
             visit.setVisitNotes(notes);
         }
+        SmsRequest smsRequest = new SmsRequest();
+        smsRequest.setTo(parent.getPhone());
+        smsRequest.setText("Hello! We have a scheduled screening for your child. Please stay tuned for more details.");
+        smsRequest.setSender("PindoTest");
+        SmsResponse response = smsService.sendSingleSms(smsRequest.getTo(),smsRequest.getText(), smsRequest.getSender());
 
+        System.out.println( response.isSuccess() ?
+                ResponseEntity.ok(response) :
+                ResponseEntity.badRequest().body(response));
         return visitRepository.save(visit);
     }
 
 
     public Optional<Visit> getVisitById(UUID id) {
         return visitRepository.findById(id);
+    }
+
+    public Optional<List<Visit>> getVisitByParentId(UUID id) {
+        return visitRepository.findByParentId(id);
     }
 
     public List<Visit> getAllVisits() {

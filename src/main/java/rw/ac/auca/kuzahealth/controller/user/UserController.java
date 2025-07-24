@@ -27,7 +27,6 @@ public class UserController {
     @Autowired
     private HealthWorkerService healthWorkerService;
 
-//    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
         logger.info("Registering user: {}", user.getFirstName());
         logger.info("User role from request: {}", user.getRole());
@@ -54,11 +53,11 @@ public class UserController {
                     HealthWorker createdHealthWorker = healthWorkerService.createHealthWorker(healthWorker);
                     logger.info("HealthWorker created successfully: {}", createdHealthWorker.getId());
                     return ResponseEntity.status(HttpStatus.CREATED)
-                        .body("User created successfully and registered as a Health Worker.");
+                            .body("User created successfully and registered as a Health Worker.");
                 } catch (Exception e) {
                     logger.error("Error creating HealthWorker: {}", e.getMessage());
                     return ResponseEntity.status(HttpStatus.CREATED)
-                        .body("User created successfully but failed to register as a Health Worker: " + e.getMessage());
+                            .body("User created successfully but failed to register as a Health Worker: " + e.getMessage());
                 }
             }
 
