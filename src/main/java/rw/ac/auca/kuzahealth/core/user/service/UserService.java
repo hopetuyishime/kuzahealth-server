@@ -144,7 +144,8 @@ public class UserService {
         sendOtpViaEmail(existingUser.getEmail(), otp);
 
         SmsRequest smsRequest = new SmsRequest();
-        smsRequest.setTo("+250786125117");
+//        smsRequest.setTo("+250786125117");
+        smsRequest.setTo(existingUser.getPhoneNumber());
         smsRequest.setText("Your OTP for account verification is: " + otp);
         smsRequest.setSender("PindoTest");
 //        smsService.sendSingleSms(smsRequest);
