@@ -1,10 +1,12 @@
 package rw.ac.auca.kuzahealth.core.healthworker.entity;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -40,5 +42,10 @@ public class HealthWorker extends BaseEntity {
     @JsonManagedReference
     @JsonIgnore
     private List<Visit> visits;
+
+    @JsonProperty("user_id")
+    public UUID getParentId() {
+        return user != null ? user.getId() : null;
+    }
 
 }

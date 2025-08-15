@@ -1,13 +1,11 @@
 package rw.ac.auca.kuzahealth.core.vaccination.entity;
 
 import java.util.Date;
+import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
@@ -22,12 +20,6 @@ import rw.ac.auca.kuzahealth.utils.BaseEntity;
 @Getter
 @Setter
 public class Vaccination extends BaseEntity {
-
-    @ManyToOne
-    private Infant infant;
-
-    @ManyToOne
-    private HealthWorker healthWorker;
 
     @Column(nullable = false)
     private String name;
@@ -46,4 +38,24 @@ public class Vaccination extends BaseEntity {
     private boolean notificationSent = false;
 
     private String notes;
+
+    @ManyToOne
+    @JoinColumn(name = "infant_id", nullable = false)
+    @JsonIgnore
+    private Infant infant;
+
+    @ManyToOne
+    @JoinColumn(name = "health_worker_id", nullable = false)
+    @JsonIgnore
+    private HealthWorker healthWorker;
+
+    @JsonProperty("infantId")
+    public UUID getInfantId() {
+        return infant != null ? infant.getId() : null;
+    }
+
+    @JsonProperty("healthWorkerId")
+    public UUID getHealthWorkerId() {
+        return healthWorker != null ? healthWorker.getId() : null;
+    }
 }

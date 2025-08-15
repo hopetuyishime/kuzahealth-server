@@ -26,5 +26,5 @@ public interface InfantRepository extends JpaRepository<Infant, UUID> {
      * @param motherId the UUID of the mother
      * @return list of infants belonging to the mother with the specified ID
      */
-    List<Infant> findByMotherId(UUID motherId);
+    List<Infant> findByMother_Id(UUID motherId);
 }

@@ -47,7 +47,7 @@ public class InfantServiceImpl implements InfantService {
 
     @Override
     public List<Infant> findByMotherId(UUID motherId) {
-        return infantRepository.findByMotherId(motherId);
+        return infantRepository.findByMother_Id(motherId);
     }
 
     @Override

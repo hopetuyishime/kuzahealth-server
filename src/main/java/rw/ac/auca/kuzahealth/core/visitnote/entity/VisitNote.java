@@ -1,9 +1,11 @@
 package rw.ac.auca.kuzahealth.core.visitnote.entity;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,5 +33,10 @@ public class VisitNote extends BaseEntity {
     @JoinColumn(name = "visit_id", nullable = false)
     @JsonBackReference
     private Visit visit;
+
+    @JsonProperty("visitId")
+    public UUID getVisitId() {
+        return visit != null ? visit.getId() : null;
+    }
 
 }

@@ -99,7 +99,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
     @Override
     public List<Vaccination> findByInfantId(UUID infantId) {
-        return vaccinationRepository.findByInfantId(infantId);
+        return vaccinationRepository.findByInfant_Id(infantId);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class VaccinationServiceImpl implements VaccinationService {
 
     @Override
     public List<Vaccination> findByHealthWorkerId(UUID healthWorkerId) {
-        return vaccinationRepository.findByHealthWorkerId(healthWorkerId);
+        return vaccinationRepository.findByHealthWorker_Id(healthWorkerId);
     }
 
     @Override

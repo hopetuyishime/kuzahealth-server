@@ -1,7 +1,10 @@
 package rw.ac.auca.kuzahealth.core.pregancyrecord.entity;
 
 import java.util.Date;
+import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -26,6 +29,11 @@ public class PregnancyRecord extends BaseEntity{
 
     @ManyToOne
     @JoinColumn(name = "parent_id", nullable = false)
+    @JsonIgnore
     private Parent parent;
 
+    @JsonProperty("parentId")
+    public UUID getParentId() {
+        return parent != null ? parent.getId() : null;
+    }
 }

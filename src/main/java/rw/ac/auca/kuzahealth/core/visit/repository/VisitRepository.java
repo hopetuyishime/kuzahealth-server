@@ -10,5 +10,5 @@ import rw.ac.auca.kuzahealth.core.visit.entity.Visit;
 
 public interface VisitRepository extends JpaRepository<Visit,UUID>{
 
-    Optional<List<Visit>> findByParentId(UUID id);
+    Optional<List<Visit>> findByParent_Id(UUID id);
 }

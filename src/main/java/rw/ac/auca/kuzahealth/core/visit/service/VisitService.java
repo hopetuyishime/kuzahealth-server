@@ -83,7 +83,7 @@ public class VisitService {
     }
 
     public Optional<List<Visit>> getVisitByParentId(UUID id) {
-        return visitRepository.findByParentId(id);
+        return visitRepository.findByParent_Id(id);
     }
 
     public List<Visit> getAllVisits() {

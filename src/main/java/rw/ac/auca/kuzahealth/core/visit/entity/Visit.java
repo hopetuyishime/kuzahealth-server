@@ -2,9 +2,13 @@ package rw.ac.auca.kuzahealth.core.visit.entity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -60,5 +64,26 @@ public class Visit extends BaseEntity {
 
     @OneToMany(mappedBy = "visit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
+    @JsonIgnore
     private List<VisitNote> visitNotes;
+
+    @JsonProperty("healthWorkerId")
+    public UUID getHealthWorkerId() {
+        return healthWorker != null ? healthWorker.getId() : null;
+    }
+
+    @JsonProperty("parentId")
+    public UUID getParentId() {
+        return parent != null ? parent.getId() : null;
+    }
+
+    @JsonProperty("visitNoteIds")
+    public List<UUID> getVisitNoteIds() {
+        return visitNotes != null ? visitNotes.stream().map(VisitNote::getId).collect(Collectors.toList()) : null;
+    }
+
+    @JsonProperty("visitId")
+    public UUID getVisitId() {
+        return getId();
+    }
 }

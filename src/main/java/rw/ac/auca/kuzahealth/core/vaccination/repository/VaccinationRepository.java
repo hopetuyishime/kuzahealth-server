@@ -33,7 +33,7 @@ public interface VaccinationRepository extends JpaRepository<Vaccination, UUID> 
      * @param infantId the ID of the infant
      * @return list of vaccinations for the infant
      */
-    List<Vaccination> findByInfantId(UUID infantId);
+    List<Vaccination> findByInfant_Id(UUID infantId);
     
     /**
      * Find all vaccinations administered by a specific health worker
@@ -49,7 +49,7 @@ public interface VaccinationRepository extends JpaRepository<Vaccination, UUID> 
      * @param healthWorkerId the ID of the health worker
      * @return list of vaccinations administered by the health worker
      */
-    List<Vaccination> findByHealthWorkerId(UUID healthWorkerId);
+    List<Vaccination> findByHealthWorker_Id(UUID healthWorkerId);
     
     /**
      * Find all vaccinations with a next due date before or on the specified date
