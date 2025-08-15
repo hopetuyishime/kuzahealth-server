@@ -1,6 +1,7 @@
 package rw.ac.auca.kuzahealth.controller.healthworker;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,5 +57,32 @@ public class HealthWorkerController {
     @GetMapping
     public ResponseEntity<?> getHealthWorkers() {
         return ResponseEntity.ok(healthWorkerService.getAllHealthWorkers());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateHealthWorker(@PathVariable("id") UUID id, @RequestBody HealthWorker healthWorker) {
+        try {
+            // Optionally re-link user based on email if provided
+            if (healthWorker.getEmail() != null) {
+                Optional<User> userOptional = userRepository.findByEmail(healthWorker.getEmail());
+                userOptional.ifPresent(healthWorker::setUser);
+            }
+            HealthWorker updated = healthWorkerService.updateHealthWorker(id, healthWorker);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            logger.error("Error updating HealthWorker {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteHealthWorker(@PathVariable("id") UUID id) {
+        try {
+            healthWorkerService.deleteHealthWorker(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("Error deleting HealthWorker {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }

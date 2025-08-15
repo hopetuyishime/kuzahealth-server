@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import rw.ac.auca.kuzahealth.core.infant.Infant;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.repository.InfantRepository;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.pregancyrecord.exception.ResourceNotFoundException;

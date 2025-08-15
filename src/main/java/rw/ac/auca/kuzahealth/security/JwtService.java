@@ -49,24 +49,6 @@ public class JwtService {
                 .compact();
     }
 
-    // public boolean isTokenValid(String token, UserDetails userDetails) {
-    // final String email = extractEmail(token);
-    // final String username = extractClaim(token, claims -> claims.get("username",
-    // String.class));
-    // final String role = extractClaim(token, claims -> claims.get("role",
-    // String.class));
-
-    // // Log the extracted values for debugging
-    // System.out.println("Email from token: " + email);
-    // System.out.println("Username from token: " + username);
-    // System.out.println("Role from token: " + role);
-
-    // // Validate email, username, and expiration
-    // return email.equals(userDetails.getUsername())
-    // && username.equals(userDetails.getUsername())
-    // && !isTokenExpired(token)
-    // && role != null; // Optionally add role validation
-    // }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
     final String usernameFromToken = extractUsername(token);

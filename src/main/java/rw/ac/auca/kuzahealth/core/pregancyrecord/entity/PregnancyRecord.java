@@ -3,6 +3,7 @@ package rw.ac.auca.kuzahealth.core.pregancyrecord.entity;
 import java.util.Date;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -16,7 +17,6 @@ import rw.ac.auca.kuzahealth.utils.BaseEntity;
 @Entity
 public class PregnancyRecord extends BaseEntity{
 
-
     public String gravity;
     public int parity;
     public Date last_menstrual_period;
@@ -25,6 +25,7 @@ public class PregnancyRecord extends BaseEntity{
 
 
     @ManyToOne
+    @JoinColumn(name = "parent_id", nullable = false)
     private Parent parent;
 
 }

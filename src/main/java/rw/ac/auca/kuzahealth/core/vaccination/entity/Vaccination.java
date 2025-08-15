@@ -11,7 +11,7 @@ import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
-import rw.ac.auca.kuzahealth.core.infant.Infant;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.utils.BaseEntity;
 
 /**

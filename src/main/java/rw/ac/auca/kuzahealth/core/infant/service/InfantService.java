@@ -3,7 +3,7 @@ package rw.ac.auca.kuzahealth.core.infant.service;
 import java.util.List;
 import java.util.UUID;
 
-import rw.ac.auca.kuzahealth.core.infant.Infant;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 
 /**

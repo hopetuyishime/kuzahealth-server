@@ -17,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class BaseEntity {
-   @Id
+    @Id
     @Column(updatable = false, nullable = false)
     private UUID id = UUID.randomUUID(); 
 

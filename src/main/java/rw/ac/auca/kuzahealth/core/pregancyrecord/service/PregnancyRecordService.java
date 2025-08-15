@@ -13,12 +13,18 @@ import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import java.util.List;
 import java.util.UUID;
 import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class PregnancyRecordService {
     
+    private static final int GESTATION_WEEKS = 40;
+
     private final PregnancyRecordRepository pregnancyRecordRepository;
     
     public PregnancyRecord createPregnancyRecord(PregnancyRecord pregnancyRecord) {
@@ -79,22 +85,40 @@ public class PregnancyRecordService {
         }
         
         PregnancyRecord latestRecord = records.get(0);
-        // Calculate if the pregnancy is still active based on LMP
         Date lmp = latestRecord.getLast_menstrual_period();
-        Date now = new Date();
+        if (lmp == null) {
+            return false;
+        }
         
-        // Assuming pregnancy duration is 40 weeks (280 days)
-        long pregnancyDuration = 280L * 24 * 60 * 60 * 1000; // in milliseconds
-        return (now.getTime() - lmp.getTime()) <= pregnancyDuration;
+        LocalDate lmpDate = Instant.ofEpochMilli(lmp.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        LocalDate today = LocalDate.now();
+
+        // If LMP is in the future, treat as not active
+        if (lmpDate.isAfter(today)) {
+            return false;
+        }
+
+        long weeks = ChronoUnit.WEEKS.between(lmpDate, today);
+        return weeks <= GESTATION_WEEKS;
     }
     
     public int calculateWeeksOfPregnancy(PregnancyRecord record) {
+        if (record == null || record.getLast_menstrual_period() == null) {
+            return 0;
+        }
         Date lmp = record.getLast_menstrual_period();
-        Date now = new Date();
-        
-        long diffInMillies = now.getTime() - lmp.getTime();
-        long diffInDays = diffInMillies / (24 * 60 * 60 * 1000);
-        
-        return (int) (diffInDays / 7);
+        LocalDate lmpDate = Instant.ofEpochMilli(lmp.getTime())
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        LocalDate today = LocalDate.now();
+
+        if (lmpDate.isAfter(today)) {
+            return 0;
+        }
+
+        long weeks = ChronoUnit.WEEKS.between(lmpDate, today);
+        return (int) weeks;
     }
 }

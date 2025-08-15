@@ -2,6 +2,7 @@ package rw.ac.auca.kuzahealth.core.healthworker.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
@@ -30,14 +31,14 @@ public class HealthWorker extends BaseEntity {
     public String qualification;
     public String service_area;
 
-    // Reference to the User entity that this HealthWorker represents
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
-    // Inside HealthWorker class
     @OneToMany(mappedBy = "healthWorker")
     @JsonManagedReference
+    @JsonIgnore
     private List<Visit> visits;
 
 }

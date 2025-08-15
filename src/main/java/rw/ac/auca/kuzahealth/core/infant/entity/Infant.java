@@ -1,4 +1,4 @@
-package rw.ac.auca.kuzahealth.core.infant;
+package rw.ac.auca.kuzahealth.core.infant.entity;
 
 import java.util.Date;
 import java.util.List;

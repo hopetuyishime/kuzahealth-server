@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.repository.HealthWorkerRepository;
-import rw.ac.auca.kuzahealth.core.infant.Infant;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.repository.InfantRepository;
 import rw.ac.auca.kuzahealth.core.pregancyrecord.exception.ResourceNotFoundException;
 import rw.ac.auca.kuzahealth.core.vaccination.dto.VaccinationRequest;

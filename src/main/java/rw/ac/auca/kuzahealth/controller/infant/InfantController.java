@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import rw.ac.auca.kuzahealth.core.infant.Infant;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.dto.InfantRequest;
 import rw.ac.auca.kuzahealth.core.infant.service.InfantService;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;

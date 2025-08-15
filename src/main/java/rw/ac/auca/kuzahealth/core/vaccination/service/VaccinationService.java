@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
-import rw.ac.auca.kuzahealth.core.infant.Infant;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.vaccination.dto.VaccinationRequest;
 import rw.ac.auca.kuzahealth.core.vaccination.entity.Vaccination;
 
