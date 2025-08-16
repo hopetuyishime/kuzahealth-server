@@ -49,7 +49,7 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/send-otp",
                                 "/api/v1/test/greet",
-                                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html","/api/logging/recent"
+                                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html","/api/logging/recent","/actuator/**"
                         )
                         .permitAll()
                         .anyRequest()
