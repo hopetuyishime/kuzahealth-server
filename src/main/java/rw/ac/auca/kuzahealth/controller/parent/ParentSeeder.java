@@ -3,6 +3,7 @@ package rw.ac.auca.kuzahealth.controller.parent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.parent.repository.ParentRepository;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
+@Profile("dev")
 public class ParentSeeder implements CommandLineRunner {
 
     @Autowired

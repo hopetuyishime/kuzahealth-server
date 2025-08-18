@@ -1,34 +1,41 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:13
+    container_name: kuzahealth-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: tuyishimeKyrie@123
+      POSTGRES_DB: kuzahealth
+    ports:
+      - "5433:5432"  # host 5433 -> container 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+#      - ./data:/docker-entrypoint-initdb.d  # dump file placed here
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: kuzahealth-app
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-0-ca-central-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0&reWriteBatchedInserts=true
-      SPRING_DATASOURCE_USERNAME: postgres.pivijyhzrwjisemlrlfz
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/kuzahealth
+      SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: tuyishimeKyrie@123
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_MAIL_USERNAME: tuyishimekyrie@gmail.com
-      SPRING_MAIL_PASSWORD: zcyttvobemuzrpar
       JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       JWT_EXPIRATION: 86400
     depends_on:
-      - postgres
-
-  postgres:
-    image: postgres:13
-    environment:
-      POSTGRES_USER: postgres.pivijyhzrwjisemlrlfz
-      POSTGRES_PASSWORD: tuyishimeKyrie@123
-      POSTGRES_DB: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:
