@@ -36,30 +36,30 @@ public class UserController {
             logger.info("Registered user role: {}", registeredUser.getRole());
 
             // If the user has the HEALTH_WORKER role, also create a HealthWorker entity
-            if (registeredUser.getRole() == EUserType.HEALTH_WORKER) {
-                logger.info("Creating HealthWorker entity for user with HEALTH_WORKER role");
-
-                HealthWorker healthWorker = new HealthWorker();
-                healthWorker.setFirst_name(registeredUser.getFirstName());
-                healthWorker.setLast_name(registeredUser.getLastName());
-                healthWorker.setEmail(registeredUser.getEmail());
-                healthWorker.setPhone_number(registeredUser.getPhoneNumber());
-
-                // Set the reference to the User entity
-                healthWorker.setUser(registeredUser);
-
-                // Save the HealthWorker entity
-                try {
-                    HealthWorker createdHealthWorker = healthWorkerService.createHealthWorker(healthWorker);
-                    logger.info("HealthWorker created successfully: {}", createdHealthWorker.getId());
-                    return ResponseEntity.status(HttpStatus.CREATED)
-                            .body("User created successfully and registered as a Health Worker.");
-                } catch (Exception e) {
-                    logger.error("Error creating HealthWorker: {}", e.getMessage());
-                    return ResponseEntity.status(HttpStatus.CREATED)
-                            .body("User created successfully but failed to register as a Health Worker: " + e.getMessage());
-                }
-            }
+//            if (registeredUser.getRole() == EUserType.HEALTH_WORKER) {
+//                logger.info("Creating HealthWorker entity for user with HEALTH_WORKER role");
+//
+//                HealthWorker healthWorker = new HealthWorker();
+//                healthWorker.setFirst_name(registeredUser.getFirstName());
+//                healthWorker.setLast_name(registeredUser.getLastName());
+//                healthWorker.setEmail(registeredUser.getEmail());
+//                healthWorker.setPhone_number(registeredUser.getPhoneNumber());
+//
+//                // Set the reference to the User entity
+//                healthWorker.setUser(registeredUser);
+//
+//                // Save the HealthWorker entity
+//                try {
+//                    HealthWorker createdHealthWorker = healthWorkerService.createHealthWorker(healthWorker);
+//                    logger.info("HealthWorker created successfully: {}", createdHealthWorker.getId());
+//                    return ResponseEntity.status(HttpStatus.CREATED)
+//                            .body("User created successfully and registered as a Health Worker.");
+//                } catch (Exception e) {
+//                    logger.error("Error creating HealthWorker: {}", e.getMessage());
+//                    return ResponseEntity.status(HttpStatus.CREATED)
+//                            .body("User created successfully but failed to register as a Health Worker: " + e.getMessage());
+//                }
+//            }
 
             return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully.");
         } catch (Exception e) {
