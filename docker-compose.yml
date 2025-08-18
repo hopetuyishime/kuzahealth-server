@@ -9,10 +9,9 @@ services:
       POSTGRES_PASSWORD: tuyishimeKyrie@123
       POSTGRES_DB: kuzahealth
     ports:
-      - "5433:5432"  # host 5433 -> container 5432
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-#      - ./data:/docker-entrypoint-initdb.d  # dump file placed here
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -30,9 +29,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/kuzahealth
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: tuyishimeKyrie@123
-      SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: dev
       JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       JWT_EXPIRATION: 86400
+      SPRING_MAIL_USERNAME: tuyishimekyrie@gmail.com
+      SPRING_MAIL_PASSWORD: zcyttvobemuzrpar
+      PINDO_TOKEN: <your-token>
+      CORS_ORIGINS: http://localhost:5173
     depends_on:
       postgres:
         condition: service_healthy
