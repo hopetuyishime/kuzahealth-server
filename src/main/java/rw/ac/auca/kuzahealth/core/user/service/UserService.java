@@ -53,7 +53,7 @@ public class UserService {
     @Value("${mail.from}")
     private String fromEmail;
 
-    @Value("${mail.password}")
+    @Value("${spring.mail.password}")
     private String password;
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserService.class);
