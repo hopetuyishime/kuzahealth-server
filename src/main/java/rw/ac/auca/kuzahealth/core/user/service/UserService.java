@@ -58,6 +58,10 @@ public class UserService {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserService.class);
 
+    public java.util.Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     public User registerUser(User user) {
         logger.info("Registering user with email: {}", user.getEmail());
         logger.info("User role from request in service: {}", user.getRole());

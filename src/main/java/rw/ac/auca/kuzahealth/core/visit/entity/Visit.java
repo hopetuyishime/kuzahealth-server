@@ -79,7 +79,21 @@ public class Visit extends BaseEntity {
 
     @JsonProperty("visitNoteIds")
     public List<UUID> getVisitNoteIds() {
-        return visitNotes != null ? visitNotes.stream().map(VisitNote::getId).collect(Collectors.toList()) : null;
+        // Avoid triggering lazy initialization when Open-Session-In-View is disabled
+        // Only compute IDs if the collection is already initialized
+        if (visitNotes == null) {
+            return null;
+        }
+        try {
+            // Hibernate.isInitialized does not initialize the proxy and is safe to call
+            if (org.hibernate.Hibernate.isInitialized(visitNotes)) {
+                return visitNotes.stream().map(VisitNote::getId).collect(Collectors.toList());
+            }
+        } catch (NoClassDefFoundError e) {
+            // If Hibernate class not available for some reason, fall back to not touching the collection
+            return null;
+        }
+        return null;
     }
 
     @JsonProperty("visitId")

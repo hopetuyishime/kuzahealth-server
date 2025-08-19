@@ -52,4 +52,6 @@ public class VisitNoteService {
     public void deleteVisitNoteById(UUID id) {
         visitNoteRepository.deleteById(id);
     }
+
+
 }

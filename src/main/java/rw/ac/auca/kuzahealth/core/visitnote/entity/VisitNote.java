@@ -26,7 +26,7 @@ public class VisitNote extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String recommendations;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> attachments;
 
     @ManyToOne

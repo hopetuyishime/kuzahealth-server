@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +25,11 @@ import rw.ac.auca.kuzahealth.core.user.entity.User;
 import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
 import rw.ac.auca.kuzahealth.core.user.service.UserService;
 import rw.ac.auca.kuzahealth.controller.auth.dto.LoginResponse;
+import rw.ac.auca.kuzahealth.controller.auth.dto.UserProfileResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import rw.ac.auca.kuzahealth.security.CustomUserDetails;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -134,5 +140,54 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        try {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+            }
+
+            Object principal = authentication.getPrincipal();
+            String email = null;
+            if (principal instanceof CustomUserDetails cud) {
+                email = cud.getEmail();
+            } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+                // Fallback if another principal implementation is used
+                email = ud.getUsername();
+            } else if (principal instanceof String s) {
+                email = s; // Sometimes principal might be a username string
+            }
+
+            if (email == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unable to resolve current user");
+            }
+
+            java.util.Optional<User> maybeUser = userService.findByEmail(email);
+            if (maybeUser.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+            return ResponseEntity.ok(toProfile(maybeUser.get()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    private UserProfileResponse toProfile(User user) {
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole())
+                .gender(user.getGender())
+                .province(user.getProvince())
+                .district(user.getDistrict())
+                .sector(user.getSector())
+                .dateOfBirth(user.getDate_of_Birth())
+                .position(user.getPosition())
+                .build();
+    }
 
 }

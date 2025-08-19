@@ -1,6 +1,7 @@
 package rw.ac.auca.kuzahealth.controller.visitnote;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +44,11 @@ public class VisitNoteController {
 
     @GetMapping("/{id}")
     public ResponseEntity<VisitNote> getVisitNoteById(@PathVariable UUID id) {
-        return visitNoteService.getVisitNoteById(id)
-                .map(visitNote -> new ResponseEntity<>(visitNote, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Optional<VisitNote> visitNote = visitNoteService.getVisitNoteById(id);
+        return visitNote.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVisitNoteById(@PathVariable UUID id) {

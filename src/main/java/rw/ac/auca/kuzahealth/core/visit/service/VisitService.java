@@ -94,13 +94,43 @@ public class VisitService {
         visitRepository.deleteById(id);
     }
 
-    public Visit updateVisit(UUID id, Visit visitDetails) {
-        Visit visit = visitRepository.findById(id).orElseThrow(() -> new RuntimeException("Visit not found"));
-        visit.setScheduledTime(visitDetails.getScheduledTime());
-        visit.setActualEndTime(visitDetails.getActualEndTime());
-        visit.setVisitType(visitDetails.getVisitType());
-        visit.setLocation(visitDetails.getLocation());
-        visit.setHealthWorker(visitDetails.getHealthWorker());
+    public Visit updateVisit(UUID id, VisitRequest request) {
+        Visit visit = visitRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Visit not found"));
+
+        if (request.getScheduledTime() != null) {
+            visit.setScheduledTime(request.getScheduledTime());
+        }
+        if (request.getActualStartTime() != null) {
+            visit.setActualStartTime(request.getActualStartTime());
+        }
+        if (request.getActualEndTime() != null) {
+            visit.setActualEndTime(request.getActualEndTime());
+        }
+        if (request.getVisitType() != null) {
+            visit.setVisitType(request.getVisitType());
+        }
+        if (request.getLocation() != null) {
+            visit.setLocation(request.getLocation());
+        }
+        if (request.getModeOfCommunication() != null) {
+            visit.setModeOfCommunication(request.getModeOfCommunication());
+        }
+        if (request.getSummary() != null) {
+            visit.setSummary(request.getSummary());
+        }
+        if (request.getHealthWorkerId() != null) {
+            HealthWorker hw = healthWorkerRepository.findById(request.getHealthWorkerId())
+                    .orElseThrow(() -> new EntityNotFoundException("HealthWorker not found"));
+            visit.setHealthWorker(hw);
+        }
+        if (request.getParent_id() != null) {
+            Parent parent = parentRepository.findById(request.getParent_id())
+                    .orElseThrow(() -> new EntityNotFoundException("Parent not found"));
+            visit.setParent(parent);
+        }
+        // For minimal change, we do not update visitNotes here.
+
         return visitRepository.save(visit);
     }
 }

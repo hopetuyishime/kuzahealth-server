@@ -58,9 +58,9 @@ public class VisitController {
                      .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Visit> updateVisit(@PathVariable UUID id, @RequestBody Visit visitDetails) {
-        Visit updatedVisit = visitService.updateVisit(id, visitDetails);
+    @PutMapping(value = "/{id}", consumes = org.springframework.http.MediaType.APPLICATION_JSON_VALUE, produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Visit> updateVisit(@PathVariable UUID id, @RequestBody @Valid VisitRequest visitRequest) {
+        Visit updatedVisit = visitService.updateVisit(id, visitRequest);
         return new ResponseEntity<>(updatedVisit, HttpStatus.OK);
     }
 
