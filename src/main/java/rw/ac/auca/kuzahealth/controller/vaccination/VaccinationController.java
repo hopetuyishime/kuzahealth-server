@@ -1,5 +1,6 @@
 package rw.ac.auca.kuzahealth.controller.vaccination;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -66,9 +67,12 @@ public class VaccinationController {
     public ResponseEntity<Vaccination> createVaccination(@RequestBody VaccinationRequest request) {
 
         log.info("Creating vaccination for infant: {}", request.getName());
-        Optional<Infant> infantInfo = Optional.ofNullable(infantRepository.findById(request.getInfantId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Infant not found")));
-        Parent parentEntity = parentRepository.findById(infantInfo.get().getMotherId())
+//        Optional<Infant> infantInfo = Optional.ofNullable(infantRepository.findById(request.getInfantId())
+//                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Infant not found")));
+        Infant infant = infantRepository.findById(request.getInfantId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Infant not found"));
+
+        Parent parentEntity = parentRepository.findById(infant.getMotherId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found"));
         log.info("Parent found: {}", parentEntity.getFirstName());
 
@@ -84,18 +88,26 @@ public class VaccinationController {
 
 
     private void sendVaccinationNotification(Parent parent, VaccinationRequest request) {
-        String phoneNumber = parent.getPhone();
+        if (parent.getPhone() == null || parent.getPhone().isEmpty()) {
+            log.warn("Parent {} has no phone number, skipping SMS", parent.getId());
+            return;
+        }
+
         String infantName = request.getName();
-        String vaccinationDate = request.getAdministeredDate().toString();
+        String vaccinationDate = request.getAdministeredDate() != null
+                ? request.getAdministeredDate().toString()
+                : "TBD";
 
-        SmsRequest smsRequest = new SmsRequest();
-        smsRequest.setTo(phoneNumber);
-        smsRequest.setText("Vaccination scheduled for " + infantName +
-                " on " + vaccinationDate + ". Please ensure to bring the infant for vaccination.");
-        smsRequest.setSender("PindoTest");
+        String message = String.format(
+                "Vaccination scheduled for %s on %s. Please ensure to bring the infant for vaccination.",
+                infantName,
+                vaccinationDate
+        );
 
-        smsService.sendSingleSms(smsRequest.getTo(), smsRequest.getText(), smsRequest.getSender());
+        smsService.sendSingleSms(parent.getPhone(), message, "PindoTest");
+        log.info("SMS sent to {}: {}", parent.getPhone(), message);
     }
+
     /**
      * Get all vaccinations
      *
