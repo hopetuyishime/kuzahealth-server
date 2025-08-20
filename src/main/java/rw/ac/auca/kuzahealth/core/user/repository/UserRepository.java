@@ -14,5 +14,5 @@ Optional<User> findByEmail(String email);
 Optional<User> findByResetToken(String token);
 
 
-
+    Optional<User> findByPhoneNumber(String email);
 }

@@ -33,6 +33,8 @@ import rw.ac.auca.kuzahealth.sms.model.SmsRequest;
 import rw.ac.auca.kuzahealth.sms.model.SmsResponse;
 import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
 
+import javax.swing.text.html.Option;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -121,11 +123,16 @@ public class UserService {
     }
 
     public OtpResponse sendOtp(EmailRequest userRequest) throws Exception {
-        Optional<User> existingUserOpt = userRepository.findByEmail(userRequest.getEmail());
+        Optional<User> existingUserOpt;
+        if (userRequest.getEmail().contains("@")) {
+            existingUserOpt = userRepository.findByEmail(userRequest.getEmail());
+        } else {
+            existingUserOpt = userRepository.findByPhoneNumber(userRequest.getEmail());
+        }
 
         if (existingUserOpt.isEmpty()) {
             return new OtpResponse("ERROR",
-                    "User with email " + userRequest.getEmail() + " does not exist. Please register first.");
+                    "User with provided email/phone number does not exist. Please register first.");
         }
 
         User existingUser = existingUserOpt.get();
@@ -158,9 +165,13 @@ public class UserService {
     // Method to verify OTP and log the user in
     public LoginResponse verifyOtpAndLogin(User user, String otp) throws Exception {
         // Fetch user from the database
-        User storedUser = userRepository.findByEmail(user.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+        User storedUser;
+        if(user.getEmail().contains("@")) {
+             storedUser = userRepository.findByEmail(user.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }else{
+            storedUser = userRepository.findByPhoneNumber(user.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
+        }
         // Check if the OTP matches and is not expired
         if (storedUser.getOtp().equals(otp) && System.currentTimeMillis() < storedUser.getOtpExpirationTime()) {
             // OTP is valid, proceed with login (e.g., generate JWT token)

@@ -1,6 +1,7 @@
 package rw.ac.auca.kuzahealth.core.infant.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +20,7 @@ public interface InfantRepository extends JpaRepository<Infant, UUID> {
      * @return list of infants belonging to the specified mother
      */
     List<Infant> findByMother(Parent mother);
-    
+
     /**
      * Find all infants by mother's ID
      * 

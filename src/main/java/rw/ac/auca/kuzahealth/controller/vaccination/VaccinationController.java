@@ -2,8 +2,11 @@ package rw.ac.auca.kuzahealth.controller.vaccination;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -17,11 +20,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
+import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
 
+import rw.ac.auca.kuzahealth.core.infant.repository.InfantRepository;
+import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
+import rw.ac.auca.kuzahealth.core.parent.repository.ParentRepository;
 import rw.ac.auca.kuzahealth.core.vaccination.dto.VaccinationRequest;
 import rw.ac.auca.kuzahealth.core.vaccination.entity.Vaccination;
 import rw.ac.auca.kuzahealth.core.vaccination.service.VaccinationService;
+import rw.ac.auca.kuzahealth.sms.model.SmsRequest;
+import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
 import rw.ac.auca.kuzahealth.utils.MessageResponse;
+
+import javax.swing.text.html.Option;
 
 /**
  * REST controller for managing vaccinations
@@ -29,12 +42,18 @@ import rw.ac.auca.kuzahealth.utils.MessageResponse;
 @RestController
 @RequestMapping("/api/vaccinations")
 public class VaccinationController {
-
     private final VaccinationService vaccinationService;
+    private final ParentRepository parentRepository;
+    private final PindoSmsService smsService;
+    private final InfantRepository infantRepository;
+    private final Logger log = org.slf4j.LoggerFactory.getLogger(VaccinationController.class);
 
     @Autowired
-    public VaccinationController(VaccinationService vaccinationService) {
+    public VaccinationController(VaccinationService vaccinationService, ParentRepository parentRepository, PindoSmsService smsService,InfantRepository infantRepository) {
         this.vaccinationService = vaccinationService;
+        this.parentRepository = parentRepository;
+        this.smsService = smsService;
+        this.infantRepository = infantRepository;
     }
 
     /**
@@ -45,10 +64,38 @@ public class VaccinationController {
      */
     @PostMapping
     public ResponseEntity<Vaccination> createVaccination(@RequestBody VaccinationRequest request) {
+
+        log.info("Creating vaccination for infant: {}", request.getName());
+        Optional<Infant> infantInfo = Optional.ofNullable(infantRepository.findById(request.getInfantId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Infant not found")));
+        Parent parentEntity = parentRepository.findById(infantInfo.get().getMotherId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent not found"));
+        log.info("Parent found: {}", parentEntity.getFirstName());
+
+        // Create the vaccination record
         Vaccination vaccination = vaccinationService.createVaccination(request);
-        return new ResponseEntity<>(vaccination, HttpStatus.CREATED);
+
+        // Send SMS notification
+        sendVaccinationNotification(parentEntity, request);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(vaccination);
     }
 
+
+
+    private void sendVaccinationNotification(Parent parent, VaccinationRequest request) {
+        String phoneNumber = parent.getPhone();
+        String infantName = request.getName();
+        String vaccinationDate = request.getAdministeredDate().toString();
+
+        SmsRequest smsRequest = new SmsRequest();
+        smsRequest.setTo(phoneNumber);
+        smsRequest.setText("Vaccination scheduled for " + infantName +
+                " on " + vaccinationDate + ". Please ensure to bring the infant for vaccination.");
+        smsRequest.setSender("PindoTest");
+
+        smsService.sendSingleSms(smsRequest.getTo(), smsRequest.getText(), smsRequest.getSender());
+    }
     /**
      * Get all vaccinations
      *
