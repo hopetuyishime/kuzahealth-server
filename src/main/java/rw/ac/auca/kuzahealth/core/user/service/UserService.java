@@ -1,19 +1,14 @@
 package rw.ac.auca.kuzahealth.core.user.service;
 
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +32,6 @@ import rw.ac.auca.kuzahealth.security.JwtService;
 import rw.ac.auca.kuzahealth.sms.model.SmsRequest;
 import rw.ac.auca.kuzahealth.sms.model.SmsResponse;
 import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
-import rw.ac.auca.kuzahealth.sms.service.SmsService;
 
 @Service
 @RequiredArgsConstructor
@@ -466,6 +460,75 @@ public class UserService {
     }
 
 
+    public Object getAllUsers() {
+        try {
+            return userRepository.findAll();
+        } catch (Exception e) {
+            logger.error("Error fetching users: {}", e.getMessage());
+            return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
+        }
+    }
 
+    public User updateUser(UUID id, User user) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (user.getFirstName() != null) {
+            existingUser.setFirstName(user.getFirstName());
+        }
+        if (user.getLastName() != null) {
+            existingUser.setLastName(user.getLastName());
+        }
+        if (user.getEmail() != null) {
+            existingUser.setEmail(user.getEmail());
+        }
+        if (user.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(user.getPhoneNumber());
+        }
+        if (user.getUsername() != null) {
+            existingUser.setUsername(user.getUsername());
+        }
+        if (user.getProvince() != null) {
+            existingUser.setProvince(user.getProvince());
+        }
+        if (user.getDistrict() != null) {
+            existingUser.setDistrict(user.getDistrict());
+        }
+        if (user.getSector() != null) {
+            existingUser.setSector(user.getSector());
+        }
+        if (user.getDate_of_Birth() != null) {
+            existingUser.setDate_of_Birth(user.getDate_of_Birth());
+        }
+        if (user.getPosition() != null) {
+            existingUser.setPosition(user.getPosition());
+        }
+        if (user.getGender() != null) {
+            existingUser.setGender(user.getGender());
+        }
+        if (user.getRole() != null) {
+            existingUser.setRole(user.getRole());
+        }
+        if (user.getPassword() != null) {
+            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        logger.info("Updating user with ID: {}", id);
+        User updatedUser = userRepository.save(existingUser);
+        logger.info("User with ID: {} updated successfully", id);
+        return updatedUser;
+    }
+
+    public void deleteUser(UUID id) {
+    logger.info("Deleting user with ID: {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        userRepository.delete(user);
+        logger.info("User with ID: {} deleted successfully", id);
+    }
+
+    public User getUserById(UUID id) {
+    logger.info("Fetching user with ID: {}", id);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }

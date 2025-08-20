@@ -78,4 +78,10 @@ public class HealthWorkerService {
         }
         healthWorkerRepository.deleteById(id);
     }
+
+    public HealthWorker getHealthWorkerById(UUID id) {
+        logger.info("Fetching HealthWorker with ID: {}", id);
+        return healthWorkerRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("HealthWorker not found"));
+    }
 }

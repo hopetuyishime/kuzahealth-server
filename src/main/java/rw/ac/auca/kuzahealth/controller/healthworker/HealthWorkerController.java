@@ -85,4 +85,19 @@ public class HealthWorkerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getHealthWorkerById(@PathVariable("id") UUID id){
+        try {
+            HealthWorker healthWorker = healthWorkerService.getHealthWorkerById(id);
+            if (healthWorker != null) {
+                return ResponseEntity.ok(healthWorker);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Health Worker not found.");
+            }
+        } catch (Exception e) {
+            logger.error("Error fetching Health Worker {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }
