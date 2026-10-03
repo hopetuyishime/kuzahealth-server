@@ -164,6 +164,42 @@ public class ImmunisationService {
         return result;
     }
 
+    /** Share of eligible infants who received each scheduled dose, optionally for one district. */
+    @Transactional(readOnly = true)
+    public List<CoverageRow> coverage(String district) {
+        LocalDate today = today();
+        List<VaccineScheduleItem> schedule = getSchedule();
+        List<Infant> infants = infantRepository.findAll().stream()
+                .filter(infant -> infant.getDateOfBirth() != null)
+                .filter(infant -> district == null || district.isBlank()
+                        || district.trim().equalsIgnoreCase(infant.getMother().getDistrict()))
+                .toList();
+        Map<UUID, List<Vaccination>> vaccinations = infants.isEmpty() ? Map.of()
+                : vaccinationRepository.findByInfant_IdIn(infants.stream().map(Infant::getId).toList()).stream()
+                        .collect(Collectors.groupingBy(v -> v.getInfant().getId()));
+
+        Map<String, long[]> counts = new HashMap<>(); // code -> {eligible, vaccinated}
+        for (Infant infant : infants) {
+            for (ScheduledDose dose : evaluate(infant, schedule,
+                    vaccinations.getOrDefault(infant.getId(), List.of()), today)) {
+                if (dose.status() == DoseStatus.UPCOMING) {
+                    continue;
+                }
+                long[] count = counts.computeIfAbsent(dose.code(), key -> new long[2]);
+                count[0]++;
+                if (dose.status() == DoseStatus.GIVEN) {
+                    count[1]++;
+                }
+            }
+        }
+        return schedule.stream().map(item -> {
+            long[] count = counts.getOrDefault(item.getCode(), new long[2]);
+            Double percent = count[0] == 0 ? null : Math.round(count[1] * 1000.0 / count[0]) / 10.0;
+            return new CoverageRow(item.getCode(), item.getVaccineName(), item.getDoseNumber(), count[0], count[1],
+                    percent);
+        }).toList();
+    }
+
     List<ScheduledDose> evaluate(Infant infant, List<VaccineScheduleItem> schedule, List<Vaccination> vaccinations,
             LocalDate today) {
         LocalDate dateOfBirth = Dates.toLocalDate(infant.getDateOfBirth());
