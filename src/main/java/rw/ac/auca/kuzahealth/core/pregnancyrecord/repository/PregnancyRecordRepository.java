@@ -15,4 +15,6 @@ public interface PregnancyRecordRepository extends JpaRepository<PregnancyRecord
     List<PregnancyRecord> findByParent_IdOrderByCreatedAtDesc(UUID parentId);
 
     boolean existsByParent_IdAndLastMenstrualPeriod(UUID parentId, Date lastMenstrualPeriod);
+
+    List<PregnancyRecord> findByLastMenstrualPeriodGreaterThanEqual(Date earliest);
 }

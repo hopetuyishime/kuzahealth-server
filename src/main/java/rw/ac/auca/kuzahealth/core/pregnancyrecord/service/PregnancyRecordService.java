@@ -47,6 +47,13 @@ public class PregnancyRecordService {
         PregnancyRecord record = new PregnancyRecord();
         record.setParent(parent);
         apply(request, record);
+
+        // Naegele's rule: the expected delivery date is 280 days after the LMP
+        LocalDate lmp = toLocalDate(request.getLastMenstrualPeriod());
+        if (lmp != null && parent.getExpectedDeliveryDate() == null) {
+            parent.setExpectedDeliveryDate(Dates.toDate(lmp.plusDays(GESTATION_WEEKS * 7L)));
+            parentRepository.save(parent);
+        }
         return pregnancyRecordRepository.save(record);
     }
 
