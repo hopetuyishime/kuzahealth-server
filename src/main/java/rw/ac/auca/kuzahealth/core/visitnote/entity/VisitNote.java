@@ -10,13 +10,15 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import rw.ac.auca.kuzahealth.core.visit.entity.Visit;
-import rw.ac.auca.kuzahealth.utils.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
+import rw.ac.auca.kuzahealth.utils.SoftDeletableEntity;
 
 @Entity
 @Getter
 @Setter
 @Table(name="visit_note")
-public class VisitNote extends BaseEntity {
+@SQLRestriction(SoftDeletableEntity.NOT_DELETED)
+public class VisitNote extends SoftDeletableEntity {
 
     private String observation;
 

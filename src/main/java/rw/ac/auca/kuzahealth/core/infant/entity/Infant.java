@@ -12,13 +12,15 @@ import lombok.Getter;
 import lombok.Setter;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.vaccination.entity.Vaccination;
-import rw.ac.auca.kuzahealth.utils.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
+import rw.ac.auca.kuzahealth.utils.SoftDeletableEntity;
 
 @Table(name = "infant")
 @Entity
 @Getter
 @Setter
-public class Infant extends BaseEntity {
+@SQLRestriction(SoftDeletableEntity.NOT_DELETED)
+public class Infant extends SoftDeletableEntity {
 
     private String firstName;
     private String lastName;

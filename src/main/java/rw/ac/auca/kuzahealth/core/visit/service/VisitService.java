@@ -27,6 +27,7 @@ import rw.ac.auca.kuzahealth.core.visit.enums.VisitStatus;
 import rw.ac.auca.kuzahealth.core.visit.repository.VisitRepository;
 import rw.ac.auca.kuzahealth.core.visitnote.entity.VisitNote;
 import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
+import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class VisitService {
     private final HealthWorkerRepository healthWorkerRepository;
     private final ParentRepository parentRepository;
     private final PindoSmsService smsService;
+    private final SoftDeleter softDeleter;
 
     @Value("${pindo.sender:PindoTest}")
     private String smsSender;
@@ -128,7 +130,7 @@ public class VisitService {
 
     @Transactional
     public void deleteVisit(UUID id) {
-        visitRepository.delete(requireVisit(id));
+        softDeleter.deleteVisit(requireVisit(id).getId());
     }
 
     @Transactional

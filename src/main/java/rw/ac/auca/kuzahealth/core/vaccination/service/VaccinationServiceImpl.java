@@ -28,6 +28,7 @@ import rw.ac.auca.kuzahealth.core.vaccination.entity.Vaccination;
 import rw.ac.auca.kuzahealth.core.vaccination.repository.VaccinationRepository;
 import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
 import rw.ac.auca.kuzahealth.utils.MailService;
+import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 /**
  * Implementation of the VaccinationService interface
@@ -43,6 +44,7 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final HealthWorkerRepository healthWorkerRepository;
     private final MailService mailService;
     private final PindoSmsService smsService;
+    private final SoftDeleter softDeleter;
 
     @Value("${pindo.sender:PindoTest}")
     private String smsSender;
@@ -165,7 +167,7 @@ public class VaccinationServiceImpl implements VaccinationService {
     @Override
     @Transactional
     public void deleteById(UUID id) {
-        vaccinationRepository.delete(findById(id));
+        softDeleter.delete(Vaccination.class, findById(id).getId());
     }
 
     private void apply(VaccinationRequest request, Vaccination vaccination) {

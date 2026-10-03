@@ -20,6 +20,7 @@ import rw.ac.auca.kuzahealth.core.parent.repository.ParentRepository;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.dto.PregnancyRecordDto;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.entity.PregnancyRecord;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.repository.PregnancyRecordRepository;
+import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class PregnancyRecordService {
     private static final int GESTATION_WEEKS = 40;
     private final PregnancyRecordRepository pregnancyRecordRepository;
     private final ParentRepository parentRepository;
+    private final SoftDeleter softDeleter;
 
     public PregnancyRecord createPregnancyRecord(PregnancyRecordDto request) {
         if (request.getParentId() == null) {
@@ -67,7 +69,7 @@ public class PregnancyRecordService {
     }
 
     public void deletePregnancyRecord(UUID id) {
-        pregnancyRecordRepository.delete(getPregnancyRecord(id));
+        softDeleter.delete(PregnancyRecord.class, getPregnancyRecord(id).getId());
     }
 
     @Transactional(readOnly = true)

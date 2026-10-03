@@ -14,13 +14,15 @@ import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.entity.PregnancyRecord;
-import rw.ac.auca.kuzahealth.utils.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
+import rw.ac.auca.kuzahealth.utils.SoftDeletableEntity;
 
 @Table(name = "parent")
 @Getter
 @Setter
 @Entity
-public class Parent extends BaseEntity {
+@SQLRestriction(SoftDeletableEntity.NOT_DELETED)
+public class Parent extends SoftDeletableEntity {
 
     private String firstName;
     private String lastName;

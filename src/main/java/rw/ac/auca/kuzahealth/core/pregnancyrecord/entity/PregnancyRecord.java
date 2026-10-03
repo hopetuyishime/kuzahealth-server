@@ -14,13 +14,15 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
-import rw.ac.auca.kuzahealth.utils.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
+import rw.ac.auca.kuzahealth.utils.SoftDeletableEntity;
 
 @Getter
 @Setter
 @Table(name="pregnancy_record")
 @Entity
-public class PregnancyRecord extends BaseEntity{
+@SQLRestriction(SoftDeletableEntity.NOT_DELETED)
+public class PregnancyRecord extends SoftDeletableEntity {
 
     private String gravity;
 

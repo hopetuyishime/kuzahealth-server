@@ -18,6 +18,7 @@ import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.repository.InfantRepository;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.parent.repository.ParentRepository;
+import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 /**
  * Implementation of the InfantService interface
@@ -28,6 +29,7 @@ public class InfantServiceImpl implements InfantService {
 
     private final InfantRepository infantRepository;
     private final ParentRepository parentRepository;
+    private final SoftDeleter softDeleter;
 
     @Override
     @Transactional
@@ -92,7 +94,7 @@ public class InfantServiceImpl implements InfantService {
     @Override
     @Transactional
     public void deleteById(UUID id) {
-        infantRepository.delete(findById(id));
+        softDeleter.deleteInfant(findById(id).getId());
     }
 
     private void apply(InfantRequest request, Infant infant) {

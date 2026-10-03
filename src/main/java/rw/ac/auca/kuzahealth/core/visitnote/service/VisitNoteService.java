@@ -11,6 +11,7 @@ import rw.ac.auca.kuzahealth.core.visit.repository.VisitRepository;
 import rw.ac.auca.kuzahealth.core.visitnote.dto.VisitNoteRequest;
 import rw.ac.auca.kuzahealth.core.visitnote.entity.VisitNote;
 import rw.ac.auca.kuzahealth.core.visitnote.repository.VisitNoteRepository;
+import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class VisitNoteService {
 
     private final VisitNoteRepository visitNoteRepository;
     private final VisitRepository visitRepository;
+    private final SoftDeleter softDeleter;
 
 
     public VisitNote createVisitNote(VisitNoteRequest request) {
@@ -46,8 +48,9 @@ public class VisitNoteService {
     }
 
     public void deleteVisitNoteById(UUID id) {
-        visitNoteRepository.delete(visitNoteRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Visit note not found with ID: " + id)));
+        VisitNote note = visitNoteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Visit note not found with ID: " + id));
+        softDeleter.delete(VisitNote.class, note.getId());
     }
 
 

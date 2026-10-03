@@ -10,7 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
-import rw.ac.auca.kuzahealth.utils.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
+import rw.ac.auca.kuzahealth.utils.SoftDeletableEntity;
 
 /**
  * Entity representing a vaccination record for an infant
@@ -19,7 +20,8 @@ import rw.ac.auca.kuzahealth.utils.BaseEntity;
 @Table(name = "vaccination")
 @Getter
 @Setter
-public class Vaccination extends BaseEntity {
+@SQLRestriction(SoftDeletableEntity.NOT_DELETED)
+public class Vaccination extends SoftDeletableEntity {
 
     @Column(nullable = false)
     private String name;

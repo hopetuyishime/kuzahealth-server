@@ -16,12 +16,14 @@ import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
 import rw.ac.auca.kuzahealth.core.parent.dto.ParentRequest;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.parent.repository.ParentRepository;
+import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 @Service
 @RequiredArgsConstructor
 public class ParentServiceImpl {
 
     private final ParentRepository parentRepository;
+    private final SoftDeleter softDeleter;
 
     @Transactional
     public Parent registerParent(ParentRequest request) {
@@ -84,10 +86,11 @@ public class ParentServiceImpl {
         return parentRepository.save(parent);
     }
 
+    /** Marks the parent and everything recorded for her (infants, visits, pregnancies) as deleted. */
     @Transactional
     public boolean deleteParent(UUID id) {
         if (parentRepository.existsById(id)) {
-            parentRepository.deleteById(id);
+            softDeleter.deleteParent(id);
             return true;
         }
         return false;

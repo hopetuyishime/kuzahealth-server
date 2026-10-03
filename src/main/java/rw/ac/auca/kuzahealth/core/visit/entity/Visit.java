@@ -15,14 +15,16 @@ import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.visit.enums.VisitStatus;
 import rw.ac.auca.kuzahealth.core.visitnote.entity.VisitNote;
-import rw.ac.auca.kuzahealth.utils.BaseEntity;
+import org.hibernate.annotations.SQLRestriction;
+import rw.ac.auca.kuzahealth.utils.SoftDeletableEntity;
 
 
 @Entity
 @Getter
 @Setter
 @Table(name = "visit")
-public class Visit extends BaseEntity {
+@SQLRestriction(SoftDeletableEntity.NOT_DELETED)
+public class Visit extends SoftDeletableEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "scheduled_time", nullable = false)
