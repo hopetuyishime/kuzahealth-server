@@ -5,9 +5,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,6 +124,38 @@ public class VisitService {
             return cb.and(predicates.toArray(Predicate[]::new));
         };
         return visitRepository.findAll(spec, pageable);
+    }
+
+    /** Scheduled visits in the next {@code days} days, soonest first. */
+    @Transactional(readOnly = true)
+    public List<Visit> upcoming(UUID healthWorkerId, int days) {
+        Date now = new Date();
+        Date until = new Date(now.getTime() + TimeUnit.DAYS.toMillis(Math.max(days, 1)));
+        return visitRepository.findAll(forWorker(healthWorkerId, (root, query, cb) -> cb.and(
+                cb.equal(root.get("status"), VisitStatus.SCHEDULED),
+                cb.between(root.get("scheduledTime"), now, until))), Sort.by("scheduledTime"));
+    }
+
+    /**
+     * Visits to follow up: marked as missed, or still scheduled although their time
+     * passed more than {@code graceHours} ago without the visit being started.
+     */
+    @Transactional(readOnly = true)
+    public List<Visit> missed(UUID healthWorkerId, long graceHours) {
+        Date cutoff = new Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(graceHours));
+        return visitRepository.findAll(forWorker(healthWorkerId, (root, query, cb) -> cb.or(
+                cb.equal(root.get("status"), VisitStatus.MISSED),
+                cb.and(cb.equal(root.get("status"), VisitStatus.SCHEDULED),
+                        cb.isNull(root.get("actualStartTime")),
+                        cb.lessThan(root.get("scheduledTime"), cutoff)))),
+                Sort.by(Sort.Direction.DESC, "scheduledTime"));
+    }
+
+    private static Specification<Visit> forWorker(UUID healthWorkerId, Specification<Visit> spec) {
+        if (healthWorkerId == null) {
+            return spec;
+        }
+        return spec.and((root, query, cb) -> cb.equal(root.get("healthWorker").get("id"), healthWorkerId));
     }
 
     @Transactional

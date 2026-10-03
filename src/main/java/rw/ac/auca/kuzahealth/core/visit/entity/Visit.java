@@ -53,6 +53,10 @@ public class Visit extends SoftDeletableEntity {
     @Column(columnDefinition = "TEXT")
     private String summary; // optional
 
+    /** Whether the parent has already been reminded about this visit. */
+    @Column(name = "reminder_sent", nullable = false)
+    private boolean reminderSent = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     private HealthWorker healthWorker;

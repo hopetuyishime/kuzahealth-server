@@ -32,6 +32,8 @@ public interface VaccinationRepository
     /** Vaccinations whose next dose is due on or before the given date and has not been announced yet. */
     List<Vaccination> findByNextDueDateLessThanEqualAndNotificationSentFalse(Date date);
 
+    List<Vaccination> findByNotificationSentFalseAndNextDueDateBetween(Date from, Date to);
+
     @Query("SELECT v FROM Vaccination v WHERE v.infant.mother.id = :parentId")
     List<Vaccination> findByParentId(@Param("parentId") UUID parentId);
 }

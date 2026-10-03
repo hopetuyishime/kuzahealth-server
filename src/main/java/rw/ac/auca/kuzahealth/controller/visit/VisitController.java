@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,9 @@ import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
 public class VisitController {
 
     private final VisitService visitService;
+
+    @Value("${app.reminders.missed-after-hours:24}")
+    private long missedAfterHours;
 
     @PostMapping
     public ResponseEntity<Visit> createVisit(@RequestBody VisitRequest visitRequest) {
@@ -62,6 +66,19 @@ public class VisitController {
             @RequestParam(required = false) String sort) {
         return PageResponse.of(visitService.search(VisitStatus.parse(status), healthWorkerId, parentId, from, to,
                 PageRequests.of(page, size, sort)));
+    }
+
+    /** Scheduled visits in the coming days, soonest first. */
+    @GetMapping("/upcoming")
+    public List<Visit> upcoming(@RequestParam(required = false) UUID healthWorkerId,
+            @RequestParam(defaultValue = "7") int days) {
+        return visitService.upcoming(healthWorkerId, Math.min(days, 90));
+    }
+
+    /** Visits the parent did not attend, for follow-up. */
+    @GetMapping("/missed")
+    public List<Visit> missed(@RequestParam(required = false) UUID healthWorkerId) {
+        return visitService.missed(healthWorkerId, missedAfterHours);
     }
 
     @GetMapping("/patient/{patientId}")
