@@ -1,0 +1,7 @@
+.git
+.env
+.env.*
+*.dump
+target
+.idea
+src/main/resources/data

@@ -32,3 +32,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secrets and data exports ###
+.env
+.env.*
+!.env.example
+*.dump
+src/main/resources/data/

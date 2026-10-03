@@ -31,8 +31,8 @@ jobs:
         run: |
           HOOK_URL="${RENDER_DEPLOY_HOOK}"
           if [ -z "$HOOK_URL" ]; then
-            # Fallback to provided hook URL if secret is not set
-            HOOK_URL="https://api.render.com/deploy/srv-d1uabpadbo4c73ec5960?key=JcUFcVmWudM"
+            echo "RENDER_DEPLOY_HOOK secret is not set"
+            exit 1
           fi
           echo "Triggering Render deploy..."
           http_code=$(curl -s -o /tmp/render_hook_resp.txt -w "%{http_code}" -X POST "$HOOK_URL")

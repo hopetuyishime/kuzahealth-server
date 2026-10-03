@@ -202,8 +202,6 @@ public class UserService {
 
     // Dummy method to send OTP via email (implement as needed)
     private String sendOtpViaEmail(String email, String otp) {
-//        final String fromEmail = "tuyishimekyrie@gmail.com"; // Replace with your email
-//        final String password = "zcyttvobemuzrpar"; // Use app password or token if needed
 
         // Setup mail server properties
         Properties props = new Properties();
@@ -340,8 +338,6 @@ public class UserService {
     }
 
     private String sendResetEmail(String email, String token) {
-//        final String fromEmail = "tuyishimekyrie@gmail.com"; // Replace with your email
-//        final String password = "zcyttvobemuzrpar"; // Use app password or token if needed
 
         // Setup mail server properties
         Properties props = new Properties();
