@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.controller.auth.dto.EmailRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.LoginRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.OtpResponse;
+import rw.ac.auca.kuzahealth.controller.auth.dto.RefreshRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.RegisterRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.ResetPasswordRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.UserProfileResponse;
@@ -94,6 +95,23 @@ public class AuthController {
         } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    /** Exchanges a refresh token for a new access token. Refresh tokens are single use. */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+        try {
+            return ResponseEntity.ok(userService.refresh(request.getRefreshToken()));
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    /** Signs the caller out on every device. */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@AuthenticationPrincipal CustomUserDetails caller) {
+        userService.logout(caller.getId());
+        return ResponseEntity.ok("Logged out.");
     }
 
     @PostMapping("/reset-password-request")

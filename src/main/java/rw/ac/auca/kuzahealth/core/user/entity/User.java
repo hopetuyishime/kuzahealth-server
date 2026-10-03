@@ -87,6 +87,11 @@ public class User extends BaseEntity {
     @Column(nullable = true)
     private Long resetTokenExpiration;
 
+    /** Access tokens issued before this instant (epoch millis) are rejected. Set on logout and password reset. */
+    @JsonIgnore
+    @Column(name = "tokens_invalid_before")
+    private Long tokensInvalidBefore;
+
     public void clearOtp() {
         this.otp = null;
         this.otpExpirationTime = null;

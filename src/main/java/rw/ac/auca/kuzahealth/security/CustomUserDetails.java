@@ -21,6 +21,7 @@ public class CustomUserDetails implements UserDetails {
     private final String email;
     private final EUserType role;
     private final boolean enabled;
+    private final Long tokensInvalidBefore;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserDetails(User user) {
@@ -30,6 +31,7 @@ public class CustomUserDetails implements UserDetails {
         this.email = user.getEmail();
         this.role = user.getRole();
         this.enabled = user.isEnabled();
+        this.tokensInvalidBefore = user.getTokensInvalidBefore();
         this.authorities = role == null
                 ? Collections.emptyList()
                 : Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.name()));

@@ -48,6 +48,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (!userDetails.isEnabled()) {
                 return;
             }
+            Long invalidBefore = userDetails.getTokensInvalidBefore();
+            if (invalidBefore != null && JwtService.issuedAtMillis(claims) < invalidBefore) {
+                return; // signed out, or the password was reset, after this token was issued
+            }
 
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());

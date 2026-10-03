@@ -32,6 +32,7 @@ import rw.ac.auca.kuzahealth.core.exception.TooManyRequestsException;
 import rw.ac.auca.kuzahealth.core.user.entity.User;
 import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
 import rw.ac.auca.kuzahealth.core.user.repository.UserRepository;
+import rw.ac.auca.kuzahealth.core.user.token.RefreshTokenService;
 import rw.ac.auca.kuzahealth.security.JwtService;
 import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
 
@@ -52,6 +53,7 @@ public class UserService {
     private final AuthMailService authMailService;
     private final PindoSmsService smsService;
     private final LoginAttemptService loginAttemptService;
+    private final RefreshTokenService refreshTokenService;
 
     @Value("${app.auth.otp-ttl-minutes:10}")
     private long otpTtlMinutes;
@@ -160,11 +162,27 @@ public class UserService {
         userRepository.save(user);
         loginAttemptService.recordSuccess(request.getEmail());
 
+        return tokensFor(user, "Login successful");
+    }
+
+    /** Exchanges a refresh token for a new access token and a new refresh token. */
+    public LoginResponse refresh(String refreshToken) {
+        return tokensFor(refreshTokenService.consume(refreshToken), "Token refreshed");
+    }
+
+    /** Ends every session of the user: refresh tokens are revoked and issued access tokens stop working. */
+    public void logout(UUID userId) {
+        refreshTokenService.revokeAll(getUserById(userId));
+    }
+
+    private LoginResponse tokensFor(User user, String message) {
         return LoginResponse.builder()
                 .token(jwtService.generateToken(user))
+                .refreshToken(refreshTokenService.issue(user))
+                .expiresIn(jwtService.getExpirationSeconds())
                 .email(user.getEmail())
                 .userType(user.getRole() != null ? user.getRole().name() : null)
-                .message("Login successful")
+                .message(message)
                 .build();
     }
 
@@ -212,6 +230,7 @@ public class UserService {
         user.setResetTokenExpiration(null);
         user.clearOtp();
         userRepository.save(user);
+        refreshTokenService.revokeAll(user);
         logger.info("Password reset for user {}", user.getId());
     }
 
@@ -281,6 +300,9 @@ public class UserService {
         }
         if (request.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (byAdmin && Boolean.FALSE.equals(request.getEnabled())) {
+            refreshTokenService.revokeAll(user);
         }
         if (byAdmin) {
             if (request.getRole() != null) {

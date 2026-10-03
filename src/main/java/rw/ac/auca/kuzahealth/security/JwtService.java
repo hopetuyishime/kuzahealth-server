@@ -18,6 +18,7 @@ import rw.ac.auca.kuzahealth.core.user.entity.User;
 public class JwtService {
 
     private static final int MIN_KEY_BYTES = 32;
+    private static final String ISSUED_AT_MILLIS = "iatMs";
 
     private final Key signInKey;
     private final long expirationMillis;
@@ -43,6 +44,7 @@ public class JwtService {
         claims.put("role", user.getRole());
 
         long now = System.currentTimeMillis();
+        claims.put(ISSUED_AT_MILLIS, now);
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername() != null ? user.getUsername() : user.getEmail())
@@ -63,6 +65,15 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    /** When the token was issued, in epoch millis. */
+    public static long issuedAtMillis(Claims claims) {
+        Long precise = claims.get(ISSUED_AT_MILLIS, Long.class);
+        if (precise != null) {
+            return precise;
+        }
+        return claims.getIssuedAt() != null ? claims.getIssuedAt().getTime() : 0L;
     }
 
     public long getExpirationSeconds() {
