@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,9 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.notification.NotificationService;
+import rw.ac.auca.kuzahealth.core.notification.SmsLog;
+import rw.ac.auca.kuzahealth.core.parent.consent.ConsentRecord;
+import rw.ac.auca.kuzahealth.core.parent.consent.ConsentRequest;
 import rw.ac.auca.kuzahealth.core.parent.dto.ParentRequest;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.parent.service.ParentServiceImpl;
+import rw.ac.auca.kuzahealth.security.CustomUserDetails;
 import rw.ac.auca.kuzahealth.utils.MessageResponse;
 import rw.ac.auca.kuzahealth.utils.paging.PageRequests;
 import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
@@ -30,10 +36,12 @@ import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
 public class ParentController {
 
     private final ParentServiceImpl parentService;
+    private final NotificationService notificationService;
 
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> registerParent(@RequestBody @Valid ParentRequest parentRequest) {
-        parentService.registerParent(parentRequest);
+    public ResponseEntity<MessageResponse> registerParent(@RequestBody @Valid ParentRequest parentRequest,
+            @AuthenticationPrincipal CustomUserDetails caller) {
+        parentService.registerParent(parentRequest, caller.getEmail());
         return new ResponseEntity<>(
                 new MessageResponse("Parent registered successfully.", HttpStatus.CREATED),
                 HttpStatus.CREATED
@@ -68,8 +76,8 @@ public class ParentController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MessageResponse> updateParent(@PathVariable UUID id,
-            @RequestBody @Valid ParentRequest parent) {
-        Parent updatedParent = parentService.updateParent(id, parent);
+            @RequestBody @Valid ParentRequest parent, @AuthenticationPrincipal CustomUserDetails caller) {
+        Parent updatedParent = parentService.updateParent(id, parent, caller.getEmail());
         if (updatedParent != null) {
             MessageResponse response = new MessageResponse("Parent updated successfully.", HttpStatus.OK);
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -87,5 +95,27 @@ public class ParentController {
         } else {
             return new ResponseEntity<>(new MessageResponse("Parent not found.", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
         }
+    }
+
+    /** Records that the parent gave or withdrew consent. Withdrawing SMS consent stops all messages to her. */
+    @PutMapping("/{id}/consent")
+    public ConsentRecord recordConsent(@PathVariable UUID id, @RequestBody @Valid ConsentRequest request,
+            @AuthenticationPrincipal CustomUserDetails caller) {
+        return parentService.recordConsent(id, request.getType(), request.getGranted(), request.getNote(),
+                caller.getEmail());
+    }
+
+    /** Consent history, newest first. */
+    @GetMapping("/{id}/consents")
+    public List<ConsentRecord> getConsents(@PathVariable UUID id) {
+        return parentService.getConsents(id);
+    }
+
+    /** Messages sent to this parent, newest first. */
+    @GetMapping("/{id}/sms-logs")
+    public PageResponse<SmsLog> getSmsLogs(@PathVariable UUID id,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        parentService.requireParent(id);
+        return PageResponse.of(notificationService.search(null, null, id, PageRequests.of(page, size, null)));
     }
 }

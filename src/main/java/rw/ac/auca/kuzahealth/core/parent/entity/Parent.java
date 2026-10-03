@@ -5,6 +5,8 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -13,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
+import rw.ac.auca.kuzahealth.core.parent.enums.Language;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.entity.PregnancyRecord;
 import org.hibernate.annotations.SQLRestriction;
 import rw.ac.auca.kuzahealth.utils.SoftDeletableEntity;
@@ -44,6 +47,14 @@ public class Parent extends SoftDeletableEntity {
     private String sector;
     private String cell;
     private String village;
+
+    /** Whether the parent agreed to receive SMS. The history is in consent_record. */
+    @Column(name = "sms_consent", nullable = false)
+    private boolean smsConsent = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "preferred_language", nullable = false, length = 8)
+    private Language preferredLanguage = Language.EN;
 
     @OneToMany(mappedBy = "parent")
     @JsonIgnore

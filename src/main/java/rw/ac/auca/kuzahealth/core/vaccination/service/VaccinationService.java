@@ -117,4 +117,11 @@ public interface VaccinationService {
      * Paged search, optionally limited to one infant or health worker
      */
     Page<Vaccination> search(UUID infantId, UUID healthWorkerId, Pageable pageable);
+
+    /**
+     * Send the "next dose is due" reminder for one vaccination
+     *
+     * @return whether a reminder went out
+     */
+    boolean remind(Vaccination vaccination);
 }

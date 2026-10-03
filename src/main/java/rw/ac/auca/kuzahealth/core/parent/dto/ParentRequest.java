@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import rw.ac.auca.kuzahealth.core.parent.enums.Language;
 
 @Getter
 @Setter
@@ -32,4 +33,10 @@ public class ParentRequest {
     private String sector;
     private String cell;
     private String village;
+
+    /** Optional. Left unchanged when absent. */
+    private Boolean smsConsent;
+
+    /** Optional: EN or RW. Left unchanged when absent. */
+    private Language preferredLanguage;
 }

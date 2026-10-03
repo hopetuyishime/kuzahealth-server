@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,7 +25,8 @@ import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.vaccination.dto.VaccinationRequest;
 import rw.ac.auca.kuzahealth.core.vaccination.entity.Vaccination;
 import rw.ac.auca.kuzahealth.core.vaccination.repository.VaccinationRepository;
-import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
+import rw.ac.auca.kuzahealth.core.notification.NotificationService;
+import rw.ac.auca.kuzahealth.core.notification.SmsPurpose;
 import rw.ac.auca.kuzahealth.utils.MailService;
 import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
@@ -43,11 +43,8 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final InfantRepository infantRepository;
     private final HealthWorkerRepository healthWorkerRepository;
     private final MailService mailService;
-    private final PindoSmsService smsService;
+    private final NotificationService notificationService;
     private final SoftDeleter softDeleter;
-
-    @Value("${pindo.sender:PindoTest}")
-    private String smsSender;
 
     @Override
     @Transactional
@@ -56,13 +53,9 @@ public class VaccinationServiceImpl implements VaccinationService {
         apply(request, vaccination);
         Vaccination saved = vaccinationRepository.save(vaccination);
 
-        Parent parent = saved.getInfant().getMother();
-        if (parent.getPhone() != null && !parent.getPhone().isBlank()) {
-            String message = String.format(
-                    "%s vaccination was recorded for %s on %s.",
-                    saved.getName(), infantName(saved.getInfant()), saved.getAdministeredDate());
-            smsService.sendSingleSms(parent.getPhone(), message, smsSender);
-        }
+        notificationService.notifyParent(saved.getInfant().getMother(), SmsPurpose.VACCINATION_RECORDED,
+                "vaccination.recorded", saved.getName(), infantName(saved.getInfant()),
+                notificationService.formatDate(saved.getAdministeredDate()));
         return saved;
     }
 
@@ -145,20 +138,9 @@ public class VaccinationServiceImpl implements VaccinationService {
         int notificationsSent = 0;
 
         for (Vaccination vaccination : findDueVaccinations(date)) {
-            Parent parent = vaccination.getInfant().getMother();
-            if (parent.getEmail() == null || parent.getEmail().isBlank()) {
-                continue;
+            if (remind(vaccination)) {
+                notificationsSent++;
             }
-            try {
-                sendVaccinationDueNotification(parent.getEmail(), infantName(vaccination.getInfant()),
-                        vaccination.getName(), vaccination.getNextDueDate());
-            } catch (MailException e) {
-                logger.error("Could not send vaccination reminder for vaccination {}", vaccination.getId(), e);
-                continue;
-            }
-            vaccination.setNotificationSent(true);
-            vaccinationRepository.save(vaccination);
-            notificationsSent++;
         }
 
         return notificationsSent;
@@ -190,16 +172,40 @@ public class VaccinationServiceImpl implements VaccinationService {
                 + (infant.getLastName() != null ? infant.getLastName() : "")).trim();
     }
 
-    private void sendVaccinationDueNotification(String email, String infantName, String vaccinationName, Date dueDate) {
-        String subject = "Vaccination Due Reminder";
-        String message = String.format(
-                "Dear Parent,\n\n" +
-                "This is a reminder that %s is due for %s vaccination on %s.\n\n" +
-                "Please contact your healthcare provider to schedule an appointment.\n\n" +
-                "Best regards,\n" +
-                "KuzaHealth Team",
-                infantName, vaccinationName, dueDate.toString());
+    /**
+     * Reminds the mother by SMS, and by email when she has one, that the next dose is due.
+     *
+     * @return whether at least one of the two went out; only then is the reminder marked as sent
+     */
+    @Override
+    @Transactional
+    public boolean remind(Vaccination vaccination) {
+        Parent parent = vaccination.getInfant().getMother();
+        String infantName = infantName(vaccination.getInfant());
+        String dueDate = notificationService.formatDate(vaccination.getNextDueDate());
 
-        mailService.sendEmail(email, subject, message);
+        boolean sent = notificationService.notifyParent(parent, SmsPurpose.VACCINATION_DUE, "vaccination.due",
+                vaccination.getName(), infantName, dueDate).getStatus().isSent();
+
+        if (parent.getEmail() != null && !parent.getEmail().isBlank()) {
+            try {
+                mailService.sendEmail(parent.getEmail(), "Vaccination Due Reminder", String.format(
+                        "Dear Parent,\n\n"
+                        + "This is a reminder that %s is due for %s vaccination on %s.\n\n"
+                        + "Please contact your healthcare provider to schedule an appointment.\n\n"
+                        + "Best regards,\n"
+                        + "KuzaHealth Team",
+                        infantName, vaccination.getName(), dueDate));
+                sent = true;
+            } catch (MailException e) {
+                logger.error("Could not email vaccination reminder for vaccination {}", vaccination.getId(), e);
+            }
+        }
+
+        if (sent) {
+            vaccination.setNotificationSent(true);
+            vaccinationRepository.save(vaccination);
+        }
+        return sent;
     }
 }

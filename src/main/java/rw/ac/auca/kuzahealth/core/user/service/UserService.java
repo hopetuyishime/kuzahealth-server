@@ -34,7 +34,8 @@ import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
 import rw.ac.auca.kuzahealth.core.user.repository.UserRepository;
 import rw.ac.auca.kuzahealth.core.user.token.RefreshTokenService;
 import rw.ac.auca.kuzahealth.security.JwtService;
-import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
+import rw.ac.auca.kuzahealth.core.notification.NotificationService;
+import rw.ac.auca.kuzahealth.core.notification.SmsPurpose;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +52,7 @@ public class UserService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthMailService authMailService;
-    private final PindoSmsService smsService;
+    private final NotificationService notificationService;
     private final LoginAttemptService loginAttemptService;
     private final RefreshTokenService refreshTokenService;
 
@@ -60,9 +61,6 @@ public class UserService {
 
     @Value("${app.auth.reset-ttl-minutes:15}")
     private long resetTtlMinutes;
-
-    @Value("${pindo.sender:PindoTest}")
-    private String smsSender;
 
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
@@ -123,8 +121,8 @@ public class UserService {
 
         authMailService.sendOtp(user.getEmail(), otp, otpTtlMinutes);
         if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
-            smsService.sendSingleSms(user.getPhoneNumber(),
-                    "Your OTP for account verification is: " + otp, smsSender);
+            notificationService.sendDirect(user.getPhoneNumber(),
+                    "Your OTP for account verification is: " + otp, null, SmsPurpose.OTP, "[login code]");
         }
 
         return new OtpResponse("SUCCESS", "OTP sent successfully. Please check your email.");

@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
+import rw.ac.auca.kuzahealth.core.parent.consent.ConsentRecord;
+import rw.ac.auca.kuzahealth.core.parent.consent.ConsentRecordRepository;
+import rw.ac.auca.kuzahealth.core.parent.consent.ConsentType;
 import rw.ac.auca.kuzahealth.core.parent.dto.ParentRequest;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.parent.repository.ParentRepository;
@@ -24,12 +27,18 @@ public class ParentServiceImpl {
 
     private final ParentRepository parentRepository;
     private final SoftDeleter softDeleter;
+    private final ConsentRecordRepository consentRecordRepository;
 
     @Transactional
-    public Parent registerParent(ParentRequest request) {
+    public Parent registerParent(ParentRequest request, String recordedBy) {
         Parent parent = new Parent();
         apply(request, parent);
-        return parentRepository.save(parent);
+        Parent saved = parentRepository.save(parent);
+        if (request.getSmsConsent() != null) {
+            recordConsent(saved.getId(), ConsentType.SMS, request.getSmsConsent(), "Recorded at registration",
+                    recordedBy);
+        }
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -77,13 +86,17 @@ public class ParentServiceImpl {
 
     /** @return the updated parent, or null when there is none with this id */
     @Transactional
-    public Parent updateParent(UUID id, ParentRequest request) {
+    public Parent updateParent(UUID id, ParentRequest request, String recordedBy) {
         Parent parent = getParentById(id);
         if (parent == null) {
             return null;
         }
         apply(request, parent);
-        return parentRepository.save(parent);
+        Parent saved = parentRepository.save(parent);
+        if (request.getSmsConsent() != null && request.getSmsConsent() != saved.isSmsConsent()) {
+            recordConsent(id, ConsentType.SMS, request.getSmsConsent(), null, recordedBy);
+        }
+        return saved;
     }
 
     /** Marks the parent and everything recorded for her (infants, visits, pregnancies) as deleted. */
@@ -94,6 +107,30 @@ public class ParentServiceImpl {
             return true;
         }
         return false;
+    }
+
+    /** Records a consent decision and, for SMS, switches messaging on or off for the parent. */
+    @Transactional
+    public ConsentRecord recordConsent(UUID parentId, ConsentType type, boolean granted, String note,
+            String recordedBy) {
+        Parent parent = requireParent(parentId);
+        if (type == ConsentType.SMS) {
+            parent.setSmsConsent(granted);
+            parentRepository.save(parent);
+        }
+        ConsentRecord record = new ConsentRecord();
+        record.setParent(parent);
+        record.setConsentType(type);
+        record.setGranted(granted);
+        record.setNote(note);
+        record.setRecordedBy(recordedBy);
+        return consentRecordRepository.save(record);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ConsentRecord> getConsents(UUID parentId) {
+        requireParent(parentId);
+        return consentRecordRepository.findByParent_IdOrderByCreatedAtDesc(parentId);
     }
 
     private static void apply(ParentRequest request, Parent parent) {
@@ -112,5 +149,8 @@ public class ParentServiceImpl {
         parent.setSector(request.getSector());
         parent.setCell(request.getCell());
         parent.setVillage(request.getVillage());
+        if (request.getPreferredLanguage() != null) {
+            parent.setPreferredLanguage(request.getPreferredLanguage());
+        }
     }
 }

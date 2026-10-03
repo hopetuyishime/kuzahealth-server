@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,7 +25,8 @@ import rw.ac.auca.kuzahealth.core.visit.entity.Visit;
 import rw.ac.auca.kuzahealth.core.visit.enums.VisitStatus;
 import rw.ac.auca.kuzahealth.core.visit.repository.VisitRepository;
 import rw.ac.auca.kuzahealth.core.visitnote.entity.VisitNote;
-import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
+import rw.ac.auca.kuzahealth.core.notification.NotificationService;
+import rw.ac.auca.kuzahealth.core.notification.SmsPurpose;
 import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 @Service
@@ -35,11 +35,8 @@ public class VisitService {
     private final VisitRepository visitRepository;
     private final HealthWorkerRepository healthWorkerRepository;
     private final ParentRepository parentRepository;
-    private final PindoSmsService smsService;
+    private final NotificationService notificationService;
     private final SoftDeleter softDeleter;
-
-    @Value("${pindo.sender:PindoTest}")
-    private String smsSender;
 
     @Transactional
     public Visit createVisit(VisitRequest request) {
@@ -80,11 +77,10 @@ public class VisitService {
 
         Visit saved = visitRepository.save(visit);
 
-        if (parent.getPhone() != null && !parent.getPhone().isBlank()) {
-            smsService.sendSingleSms(parent.getPhone(),
-                    "Hello! We have a scheduled screening for your child. Please stay tuned for more details.",
-                    smsSender);
-        }
+        notificationService.notifyParent(parent, SmsPurpose.VISIT_SCHEDULED, "visit.scheduled",
+                parent.getFirstName(), saved.getVisitType(),
+                notificationService.formatDate(saved.getScheduledTime()),
+                notificationService.formatTime(saved.getScheduledTime()));
         return saved;
     }
 
