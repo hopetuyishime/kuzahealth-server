@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.core.infant.dto.InfantRequest;
+import rw.ac.auca.kuzahealth.core.immunisation.ImmunisationService;
+import rw.ac.auca.kuzahealth.core.immunisation.ScheduledDose;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.service.InfantService;
 import rw.ac.auca.kuzahealth.utils.MessageResponse;
@@ -30,6 +32,7 @@ import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
 public class InfantController {
 
     private final InfantService infantService;
+    private final ImmunisationService immunisationService;
 
     @PostMapping
     public ResponseEntity<Infant> createInfant(@RequestBody @Valid InfantRequest request) {
@@ -55,6 +58,12 @@ public class InfantController {
     public ResponseEntity<Infant> getInfantById(@PathVariable UUID id) {
         Infant infant = infantService.findById(id);
         return new ResponseEntity<>(infant, HttpStatus.OK);
+    }
+
+    /** Each scheduled dose for this infant: given, upcoming, due or overdue. */
+    @GetMapping("/{id}/immunisation-schedule")
+    public List<ScheduledDose> immunisationSchedule(@PathVariable UUID id) {
+        return immunisationService.scheduleFor(id);
     }
 
     @GetMapping("/mother/{motherId}")

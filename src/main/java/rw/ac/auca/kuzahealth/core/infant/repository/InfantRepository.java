@@ -1,5 +1,6 @@
 package rw.ac.auca.kuzahealth.core.infant.repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,4 +29,6 @@ public interface InfantRepository extends JpaRepository<Infant, UUID>, JpaSpecif
      * @return list of infants belonging to the mother with the specified ID
      */
     List<Infant> findByMother_Id(UUID motherId);
+
+    List<Infant> findByDateOfBirthGreaterThanEqual(Date dateOfBirth);
 }

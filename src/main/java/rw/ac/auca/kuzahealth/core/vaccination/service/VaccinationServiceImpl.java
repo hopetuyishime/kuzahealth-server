@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
+import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
+import rw.ac.auca.kuzahealth.core.immunisation.ImmunisationService;
+import rw.ac.auca.kuzahealth.core.immunisation.VaccineScheduleItem;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.repository.HealthWorkerRepository;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
@@ -28,6 +31,7 @@ import rw.ac.auca.kuzahealth.core.vaccination.repository.VaccinationRepository;
 import rw.ac.auca.kuzahealth.core.notification.NotificationService;
 import rw.ac.auca.kuzahealth.core.notification.SmsPurpose;
 import rw.ac.auca.kuzahealth.utils.MailService;
+import rw.ac.auca.kuzahealth.utils.Dates;
 import rw.ac.auca.kuzahealth.utils.SoftDeleter;
 
 /**
@@ -45,6 +49,7 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final MailService mailService;
     private final NotificationService notificationService;
     private final SoftDeleter softDeleter;
+    private final ImmunisationService immunisationService;
 
     @Override
     @Transactional
@@ -158,12 +163,29 @@ public class VaccinationServiceImpl implements VaccinationService {
         HealthWorker healthWorker = healthWorkerRepository.findById(request.getHealthWorkerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Health Worker not found with id: " + request.getHealthWorkerId()));
 
+        VaccineScheduleItem scheduleItem = null;
+        if (request.getScheduleCode() != null && !request.getScheduleCode().isBlank()) {
+            scheduleItem = immunisationService.findItem(request.getScheduleCode())
+                    .orElseThrow(() -> new BadRequestException("Unknown schedule code: " + request.getScheduleCode()));
+        }
+        boolean hasName = request.getName() != null && !request.getName().isBlank();
+        if (!hasName && scheduleItem == null) {
+            throw new BadRequestException("name or scheduleCode is required");
+        }
+
         vaccination.setInfant(infant);
         vaccination.setHealthWorker(healthWorker);
-        vaccination.setName(request.getName());
+        vaccination.setScheduleCode(scheduleItem != null ? scheduleItem.getCode() : null);
+        vaccination.setName(hasName ? request.getName()
+                : scheduleItem.getVaccineName() + " (dose " + scheduleItem.getDoseNumber() + ")");
         vaccination.setDescription(request.getDescription() != null ? request.getDescription() : "");
         vaccination.setAdministeredDate(request.getAdministeredDate());
         vaccination.setNextDueDate(request.getNextDueDate());
+        if (request.getNextDueDate() == null && scheduleItem != null) {
+            // Default to when the next outstanding scheduled dose falls due
+            immunisationService.nextDueDateAfter(infant, scheduleItem.getCode())
+                    .ifPresent(next -> vaccination.setNextDueDate(Dates.toDate(next)));
+        }
         vaccination.setNotes(request.getNotes());
     }
 

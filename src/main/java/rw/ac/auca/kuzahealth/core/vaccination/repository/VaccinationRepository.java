@@ -1,5 +1,6 @@
 package rw.ac.auca.kuzahealth.core.vaccination.repository;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,8 @@ public interface VaccinationRepository
     List<Vaccination> findByInfant(Infant infant);
 
     List<Vaccination> findByInfant_Id(UUID infantId);
+
+    List<Vaccination> findByInfant_IdIn(Collection<UUID> infantIds);
 
     List<Vaccination> findByHealthWorker(HealthWorker healthWorker);
 

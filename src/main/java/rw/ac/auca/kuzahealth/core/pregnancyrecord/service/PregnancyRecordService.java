@@ -1,8 +1,6 @@
 package rw.ac.auca.kuzahealth.core.pregnancyrecord.service;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +19,7 @@ import rw.ac.auca.kuzahealth.core.pregnancyrecord.dto.PregnancyRecordDto;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.entity.PregnancyRecord;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.repository.PregnancyRecordRepository;
 import rw.ac.auca.kuzahealth.utils.SoftDeleter;
+import rw.ac.auca.kuzahealth.utils.Dates;
 
 @Service
 @RequiredArgsConstructor
@@ -100,8 +99,7 @@ public class PregnancyRecordService {
     }
 
     public static LocalDate toLocalDate(Date date) {
-        return date == null ? null
-                : Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        return Dates.toLocalDate(date);
     }
 
     private static void apply(PregnancyRecordDto request, PregnancyRecord record) {

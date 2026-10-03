@@ -41,6 +41,10 @@ public class Vaccination extends SoftDeletableEntity {
 
     private String notes;
 
+    /** Code of the routine schedule item this dose fulfils, when it is a scheduled dose. */
+    @Column(name = "schedule_code", length = 32)
+    private String scheduleCode;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "infant_id", nullable = false)
     @JsonIgnore
