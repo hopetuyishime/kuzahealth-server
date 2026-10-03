@@ -39,12 +39,12 @@ public class Vaccination extends BaseEntity {
 
     private String notes;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "infant_id", nullable = false)
     @JsonIgnore
     private Infant infant;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "health_worker_id", nullable = false)
     @JsonIgnore
     private HealthWorker healthWorker;

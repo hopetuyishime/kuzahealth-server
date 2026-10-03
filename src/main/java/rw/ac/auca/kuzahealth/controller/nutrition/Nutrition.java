@@ -12,7 +12,7 @@ import rw.ac.auca.kuzahealth.sms.model.SmsResponse;
 import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
 
 @RestController
-@RequestMapping("/api/nutrition-info")
+@RequestMapping({ "/api/nutrition-info", "/api/v1/nutrition-info" })
 @RequiredArgsConstructor
 public class Nutrition {
 

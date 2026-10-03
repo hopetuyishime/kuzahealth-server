@@ -1,4 +1,4 @@
-package rw.ac.auca.kuzahealth.controller.pregancyrecord;
+package rw.ac.auca.kuzahealth.controller.pregnancyrecord;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,19 +14,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.entity.PregnancyRecord;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.service.PregnancyRecordService;
+import rw.ac.auca.kuzahealth.core.pregnancyrecord.dto.PregnancyRecordDto;
+import rw.ac.auca.kuzahealth.core.pregnancyrecord.entity.PregnancyRecord;
+import rw.ac.auca.kuzahealth.core.pregnancyrecord.service.PregnancyRecordService;
 
 @RestController
-@RequestMapping("/api/pregnancy-records")
+@RequestMapping({ "/api/pregnancy-records", "/api/v1/pregnancy-records" })
 @RequiredArgsConstructor
 public class PregnancyRecordController {
 
     private final PregnancyRecordService pregnancyRecordService;
 
     @PostMapping
-    public ResponseEntity<PregnancyRecord> createPregnancyRecord(@RequestBody PregnancyRecord pregnancyRecord) {
+    public ResponseEntity<PregnancyRecord> createPregnancyRecord(@RequestBody PregnancyRecordDto pregnancyRecord) {
         PregnancyRecord created = pregnancyRecordService.createPregnancyRecord(pregnancyRecord);
         return ResponseEntity.ok(created);
     }
@@ -34,7 +34,7 @@ public class PregnancyRecordController {
     @PutMapping("/{id}")
     public ResponseEntity<PregnancyRecord> updatePregnancyRecord(
             @PathVariable UUID id,
-            @RequestBody PregnancyRecord pregnancyRecord) {
+            @RequestBody PregnancyRecordDto pregnancyRecord) {
         PregnancyRecord updated = pregnancyRecordService.updatePregnancyRecord(id, pregnancyRecord);
         return ResponseEntity.ok(updated);
     }
@@ -47,10 +47,7 @@ public class PregnancyRecordController {
 
     @GetMapping("/parent/{parentId}")
     public ResponseEntity<List<PregnancyRecord>> getPregnancyRecordsByParent(@PathVariable UUID parentId) {
-        Parent parent = new Parent(); // You'll need to get the parent properly
-        parent.setId(parentId);
-        List<PregnancyRecord> records = pregnancyRecordService.getAllPregnancyRecordsByParent(parent);
-        return ResponseEntity.ok(records);
+        return ResponseEntity.ok(pregnancyRecordService.getAllPregnancyRecordsByParent(parentId));
     }
 
     @DeleteMapping("/{id}")
@@ -67,10 +64,7 @@ public class PregnancyRecordController {
 
     @GetMapping("/parent/{parentId}/active")
     public ResponseEntity<Boolean> hasActivePregnancy(@PathVariable UUID parentId) {
-        Parent parent = new Parent(); // You'll need to get the parent properly
-        parent.setId(parentId);
-        boolean hasActive = pregnancyRecordService.hasActivePregnancy(parent);
-        return ResponseEntity.ok(hasActive);
+        return ResponseEntity.ok(pregnancyRecordService.hasActivePregnancy(parentId));
     }
 
     @GetMapping("/{id}/weeks")

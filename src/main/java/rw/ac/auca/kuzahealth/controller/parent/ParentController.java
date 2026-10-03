@@ -3,12 +3,8 @@ package rw.ac.auca.kuzahealth.controller.parent;
 import java.util.List;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,29 +12,27 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.core.parent.dto.ParentRequest;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 import rw.ac.auca.kuzahealth.core.parent.service.ParentServiceImpl;
 import rw.ac.auca.kuzahealth.utils.MessageResponse;
+import rw.ac.auca.kuzahealth.utils.paging.PageRequests;
+import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
 
 @RestController
-@RequestMapping("/api/parents")
+@RequestMapping({ "/api/parents", "/api/v1/parents" })
+@RequiredArgsConstructor
 public class ParentController {
 
     private final ParentServiceImpl parentService;
-    private static final Logger logger = LoggerFactory.getLogger(ParentController.class);
-
-    @Autowired
-    public ParentController(ParentServiceImpl parentService) {
-        this.parentService = parentService;
-    }
 
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> registerParent(@RequestBody @Valid Parent parentRequest) {
-        logger.info("Registering parent: {}", parentRequest.getFirstName());
+    public ResponseEntity<MessageResponse> registerParent(@RequestBody @Valid ParentRequest parentRequest) {
         parentService.registerParent(parentRequest);
         return new ResponseEntity<>(
                 new MessageResponse("Parent registered successfully.", HttpStatus.CREATED),
@@ -52,6 +46,16 @@ public class ParentController {
         return new ResponseEntity<>(parents, HttpStatus.OK);
     }
 
+    /** Paged, filterable alternative to the full list. */
+    @GetMapping("/search")
+    public PageResponse<Parent> search(@RequestParam(required = false) String q,
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) Boolean highRisk,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sort) {
+        return PageResponse.of(parentService.search(q, district, highRisk, PageRequests.of(page, size, sort)));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Parent> getParentById(@PathVariable UUID id) {
         Parent parent = parentService.getParentById(id);
@@ -62,10 +66,9 @@ public class ParentController {
         }
     }
 
-
-
     @PutMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateParent(@PathVariable UUID id, @RequestBody Parent parent) {
+    public ResponseEntity<MessageResponse> updateParent(@PathVariable UUID id,
+            @RequestBody @Valid ParentRequest parent) {
         Parent updatedParent = parentService.updateParent(id, parent);
         if (updatedParent != null) {
             MessageResponse response = new MessageResponse("Parent updated successfully.", HttpStatus.OK);

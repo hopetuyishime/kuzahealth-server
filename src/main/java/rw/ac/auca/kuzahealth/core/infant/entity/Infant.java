@@ -39,7 +39,7 @@ public class Infant extends BaseEntity {
     @Column(name = "special_conditions")
     private String specialConditions;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mother_id", nullable = false)
     @JsonIgnore
     private Parent mother;

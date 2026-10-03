@@ -23,10 +23,6 @@ public class VisitNoteService {
     private final VisitNoteRepository visitNoteRepository;
     private final VisitRepository visitRepository;
 
-//    @Autowired
-//    public VisitNoteService(VisitNoteRepository visitNoteRepository) {
-//        this.visitNoteRepository = visitNoteRepository;
-//    }
 
     public VisitNote createVisitNote(VisitNoteRequest request) {
         Visit visit = visitRepository.findById(request.getVisitId())
@@ -50,7 +46,8 @@ public class VisitNoteService {
     }
 
     public void deleteVisitNoteById(UUID id) {
-        visitNoteRepository.deleteById(id);
+        visitNoteRepository.delete(visitNoteRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Visit note not found with ID: " + id)));
     }
 
 

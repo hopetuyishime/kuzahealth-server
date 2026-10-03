@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.entity.PregnancyRecord;
+import rw.ac.auca.kuzahealth.core.pregnancyrecord.entity.PregnancyRecord;
 import rw.ac.auca.kuzahealth.utils.BaseEntity;
 
 @Table(name = "parent")
@@ -26,10 +26,13 @@ public class Parent extends BaseEntity {
     private String lastName;
     private String email;
     private String phone;
+
     @Temporal(TemporalType.DATE)
     private Date expectedDeliveryDate;
+
     @Column(name = "high_risk", nullable = false)
     private boolean isHighRisk = false;
+
     private String bloodGroup;
     private String maritalStatus;
     private String emergencyContactNumber;
@@ -40,11 +43,16 @@ public class Parent extends BaseEntity {
     private String cell;
     private String village;
 
-    @OneToMany
+    @OneToMany(mappedBy = "parent")
     @JsonIgnore
     private List<PregnancyRecord> pregnancyRecord;
 
     @OneToMany(mappedBy = "mother")
     @JsonIgnore
     private List<Infant> infants;
+
+    @JsonIgnore
+    public String getFullName() {
+        return ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
+    }
 }

@@ -1,11 +1,13 @@
-package rw.ac.auca.kuzahealth.core.pregancyrecord.entity;
+package rw.ac.auca.kuzahealth.core.pregnancyrecord.entity;
 
 import java.util.Date;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -20,14 +22,24 @@ import rw.ac.auca.kuzahealth.utils.BaseEntity;
 @Entity
 public class PregnancyRecord extends BaseEntity{
 
-    public String gravity;
-    public int parity;
-    public Date last_menstrual_period;
-    public String medical_history;
-    public String  pregnancy_complications;
+    private String gravity;
 
+    private int parity;
 
-    @ManyToOne
+    // The JSON names stay snake_case because existing clients read them that way.
+    @JsonProperty("last_menstrual_period")
+    @Column(name = "last_menstrual_period")
+    private Date lastMenstrualPeriod;
+
+    @JsonProperty("medical_history")
+    @Column(name = "medical_history")
+    private String medicalHistory;
+
+    @JsonProperty("pregnancy_complications")
+    @Column(name = "pregnancy_complications")
+    private String pregnancyComplications;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", nullable = false)
     @JsonIgnore
     private Parent parent;

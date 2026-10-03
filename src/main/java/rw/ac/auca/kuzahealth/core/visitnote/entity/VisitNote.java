@@ -3,7 +3,7 @@ package rw.ac.auca.kuzahealth.core.visitnote.entity;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -29,9 +29,9 @@ public class VisitNote extends BaseEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> attachments;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "visit_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Visit visit;
 
     @JsonProperty("visitId")

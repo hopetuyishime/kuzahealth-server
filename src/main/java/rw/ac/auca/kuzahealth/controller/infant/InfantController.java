@@ -3,7 +3,6 @@ package rw.ac.auca.kuzahealth.controller.infant;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,54 +12,43 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.core.infant.dto.InfantRequest;
+import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.service.InfantService;
-import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
-import rw.ac.auca.kuzahealth.core.parent.service.ParentServiceImpl;
 import rw.ac.auca.kuzahealth.utils.MessageResponse;
+import rw.ac.auca.kuzahealth.utils.paging.PageRequests;
+import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
 
 @RestController
-@RequestMapping("/api/infants")
+@RequestMapping({ "/api/infants", "/api/v1/infants" })
+@RequiredArgsConstructor
 public class InfantController {
 
     private final InfantService infantService;
-    private final ParentServiceImpl parentService;
-
-    @Autowired
-    public InfantController(InfantService infantService, ParentServiceImpl parentService) {
-        this.infantService = infantService;
-        this.parentService = parentService;
-    }
 
     @PostMapping
-    public ResponseEntity<Infant> createInfant(@RequestBody InfantRequest request) {
-        Parent mother = parentService.getParentById(request.getMotherId());
-        if (mother == null) {
-            throw new RuntimeException("Mother not found with id: " + request.getMotherId());
-        }
-
-        Infant infant = new Infant();
-        infant.setFirstName(request.getFirstName());
-        infant.setLastName(request.getLastName());
-        infant.setDateOfBirth(request.getDateOfBirth());
-        infant.setGender(request.getGender());
-        infant.setBirthWeight(request.getBirthWeight());
-        infant.setBirthHeight(request.getBirthHeight());
-        infant.setBloodGroup(request.getBloodGroup());
-        infant.setSpecialConditions(request.getSpecialConditions());
-        infant.setMother(mother);
-
-        Infant savedInfant = infantService.saveInfant(infant);
-        return new ResponseEntity<>(savedInfant, HttpStatus.CREATED);
+    public ResponseEntity<Infant> createInfant(@RequestBody @Valid InfantRequest request) {
+        return new ResponseEntity<>(infantService.createInfant(request), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<Infant>> getAllInfants() {
         List<Infant> infants = infantService.findAll();
         return new ResponseEntity<>(infants, HttpStatus.OK);
+    }
+
+    /** Paged, filterable alternative to the full list. */
+    @GetMapping("/search")
+    public PageResponse<Infant> search(@RequestParam(required = false) String q,
+            @RequestParam(required = false) UUID motherId,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sort) {
+        return PageResponse.of(infantService.search(q, motherId, PageRequests.of(page, size, sort)));
     }
 
     @GetMapping("/{id}")
@@ -76,25 +64,8 @@ public class InfantController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Infant> updateInfant(@PathVariable UUID id, @RequestBody InfantRequest request) {
-        Infant existingInfant = infantService.findById(id);
-        Parent mother = parentService.getParentById(request.getMotherId());
-        if (mother == null) {
-            throw new RuntimeException("Mother not found with id: " + request.getMotherId());
-        }
-
-        existingInfant.setFirstName(request.getFirstName());
-        existingInfant.setLastName(request.getLastName());
-        existingInfant.setDateOfBirth(request.getDateOfBirth());
-        existingInfant.setGender(request.getGender());
-        existingInfant.setBirthWeight(request.getBirthWeight());
-        existingInfant.setBirthHeight(request.getBirthHeight());
-        existingInfant.setBloodGroup(request.getBloodGroup());
-        existingInfant.setSpecialConditions(request.getSpecialConditions());
-        existingInfant.setMother(mother);
-
-        Infant updatedInfant = infantService.saveInfant(existingInfant);
-        return new ResponseEntity<>(updatedInfant, HttpStatus.OK);
+    public ResponseEntity<Infant> updateInfant(@PathVariable UUID id, @RequestBody @Valid InfantRequest request) {
+        return new ResponseEntity<>(infantService.updateInfant(id, request), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

@@ -79,7 +79,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         // Operational and administrative surfaces
-                        .requestMatchers("/actuator/**", "/api/logging/**", "/api/v1/audit/**").hasRole(ADMIN)
+                        .requestMatchers("/actuator/**", "/api/logging/**", "/api/v1/logging/**", "/api/v1/audit/**").hasRole(ADMIN)
                         // Accounts: finer rules (self or admin) are enforced on the controller methods
                         .requestMatchers("/api/v1/auth/**", "/api/v1/test/**", "/api/users/**", "/api/v1/users/**")
                         .authenticated()

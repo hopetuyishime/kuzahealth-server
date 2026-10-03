@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -21,6 +22,8 @@ import rw.ac.auca.kuzahealth.controller.user.dto.UserResponse;
 import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
 import rw.ac.auca.kuzahealth.core.user.service.UserService;
 import rw.ac.auca.kuzahealth.security.CustomUserDetails;
+import rw.ac.auca.kuzahealth.utils.paging.PageRequests;
+import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
 
 @RestController
 @RequestMapping({ "/api/users", "/api/v1/users" })
@@ -35,6 +38,15 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers().stream().map(UserResponse::from).toList());
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public PageResponse<UserResponse> search(@RequestParam(required = false) String q,
+            @RequestParam(required = false) EUserType role,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String sort) {
+        return PageResponse.of(userService.search(q, role, PageRequests.of(page, size, sort)), UserResponse::from);
     }
 
     @GetMapping("/{id}")

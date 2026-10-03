@@ -16,7 +16,7 @@ import rw.ac.auca.kuzahealth.sms.service.PindoSmsService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sms")
+@RequestMapping({ "/api/sms", "/api/v1/sms" })
 @Slf4j
 public class SmsController {
     

@@ -23,7 +23,6 @@ import rw.ac.auca.kuzahealth.controller.auth.dto.ResetPasswordRequest;
 import rw.ac.auca.kuzahealth.controller.auth.dto.UserProfileResponse;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.exception.DuplicateResourceException;
-import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.service.HealthWorkerService;
 import rw.ac.auca.kuzahealth.core.user.entity.User;
 import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
@@ -65,14 +64,8 @@ public class AuthController {
         }
 
         if (registeredUser.getRole() == EUserType.HEALTH_WORKER) {
-            HealthWorker healthWorker = new HealthWorker();
-            healthWorker.setFirst_name(registeredUser.getFirstName());
-            healthWorker.setLast_name(registeredUser.getLastName());
-            healthWorker.setEmail(registeredUser.getEmail());
-            healthWorker.setPhone_number(registeredUser.getPhoneNumber());
-            healthWorker.setUser(registeredUser);
             try {
-                healthWorkerService.createHealthWorker(healthWorker);
+                healthWorkerService.createForUser(registeredUser);
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .body("User created successfully and registered as a Health Worker.");
             } catch (RuntimeException e) {
