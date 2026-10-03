@@ -25,6 +25,8 @@ public class SoftDeleter {
         Date now = new Date();
         run("UPDATE Vaccination v SET v.deletedAt = :now WHERE v.infant.id IN "
                 + "(SELECT i.id FROM Infant i WHERE i.mother.id = :id)", now, parentId);
+        run("UPDATE GrowthMeasurement g SET g.deletedAt = :now WHERE g.infant.id IN "
+                + "(SELECT i.id FROM Infant i WHERE i.mother.id = :id)", now, parentId);
         run("UPDATE Infant i SET i.deletedAt = :now WHERE i.mother.id = :id", now, parentId);
         run("UPDATE VisitNote n SET n.deletedAt = :now WHERE n.visit.id IN "
                 + "(SELECT v.id FROM Visit v WHERE v.parent.id = :id)", now, parentId);
@@ -37,6 +39,7 @@ public class SoftDeleter {
     public void deleteInfant(UUID infantId) {
         Date now = new Date();
         run("UPDATE Vaccination v SET v.deletedAt = :now WHERE v.infant.id = :id", now, infantId);
+        run("UPDATE GrowthMeasurement g SET g.deletedAt = :now WHERE g.infant.id = :id", now, infantId);
         run("UPDATE Infant i SET i.deletedAt = :now WHERE i.id = :id", now, infantId);
     }
 
