@@ -1,17 +1,22 @@
 package rw.ac.auca.kuzahealth.core.healthworker.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadSummary;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.exception.DuplicateResourceException;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
@@ -20,6 +25,9 @@ import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.repository.HealthWorkerRepository;
 import rw.ac.auca.kuzahealth.core.user.entity.User;
 import rw.ac.auca.kuzahealth.core.user.repository.UserRepository;
+import rw.ac.auca.kuzahealth.core.parent.repository.ParentRepository;
+import rw.ac.auca.kuzahealth.core.visit.enums.VisitStatus;
+import rw.ac.auca.kuzahealth.core.visit.repository.VisitRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +37,9 @@ public class HealthWorkerService {
 
     private final HealthWorkerRepository healthWorkerRepository;
     private final UserRepository userRepository;
+    private final ParentRepository parentRepository;
+    private final VisitRepository visitRepository;
+    private final CaseloadGuard caseloadGuard;
 
     /** Creates the staff record that accompanies a newly registered health worker account. */
     @Transactional
@@ -115,6 +126,26 @@ public class HealthWorkerService {
         return healthWorkerRepository.findByUser_Id(userId)
                 .or(() -> healthWorkerRepository.findByEmail(email))
                 .orElseThrow(() -> new ResourceNotFoundException("No health worker record for this account"));
+    }
+
+    /** What is in a health worker's caseload: assigned parents and the visits that need attention. */
+    @Transactional(readOnly = true)
+    public CaseloadSummary caseload(UUID healthWorkerId, long missedAfterHours) {
+        HealthWorker healthWorker = getHealthWorkerById(healthWorkerId);
+        caseloadGuard.restrictedTo().ifPresent(own -> {
+            if (!own.equals(healthWorkerId)) {
+                throw new AccessDeniedException("You can only see your own caseload");
+            }
+        });
+        Date now = new Date();
+        Date inAWeek = new Date(now.getTime() + TimeUnit.DAYS.toMillis(7));
+        Date missedCutoff = new Date(now.getTime() - TimeUnit.HOURS.toMillis(missedAfterHours));
+        return new CaseloadSummary(healthWorkerId, healthWorker.getFullName(),
+                parentRepository.countByAssignedHealthWorker_Id(healthWorkerId),
+                parentRepository.countByAssignedHealthWorker_IdAndIsHighRiskTrue(healthWorkerId),
+                visitRepository.countUpcomingForCaseload(healthWorkerId, VisitStatus.SCHEDULED, now, inAWeek),
+                visitRepository.countMissedForCaseload(healthWorkerId, VisitStatus.MISSED, VisitStatus.SCHEDULED,
+                        missedCutoff));
     }
 
     private static void apply(HealthWorkerRequest request, HealthWorker target) {

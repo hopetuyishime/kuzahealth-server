@@ -3,6 +3,7 @@ package rw.ac.auca.kuzahealth.controller.healthworker;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadSummary;
 import rw.ac.auca.kuzahealth.core.healthworker.dto.HealthWorkerRequest;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.service.HealthWorkerService;
@@ -31,6 +33,9 @@ import rw.ac.auca.kuzahealth.utils.paging.PageResponse;
 public class HealthWorkerController {
 
     private final HealthWorkerService healthWorkerService;
+
+    @Value("${app.reminders.missed-after-hours:24}")
+    private long missedAfterHours;
 
     @PostMapping
     public ResponseEntity<HealthWorker> createHealthWorker(@RequestBody @Valid HealthWorkerRequest healthWorker) {
@@ -53,6 +58,18 @@ public class HealthWorkerController {
     @GetMapping("/me")
     public HealthWorker me(@AuthenticationPrincipal CustomUserDetails caller) {
         return healthWorkerService.getForUser(caller.getId(), caller.getEmail());
+    }
+
+    /** Caseload of the signed-in health worker. */
+    @GetMapping("/me/caseload")
+    public CaseloadSummary myCaseload(@AuthenticationPrincipal CustomUserDetails caller) {
+        return healthWorkerService.caseload(me(caller).getId(), missedAfterHours);
+    }
+
+    /** Size of a health worker's caseload. The parents themselves are at /parents/search?assignedHealthWorkerId=. */
+    @GetMapping("/{id}/caseload")
+    public CaseloadSummary caseload(@PathVariable("id") UUID id) {
+        return healthWorkerService.caseload(id, missedAfterHours);
     }
 
     @PutMapping("/{id}")

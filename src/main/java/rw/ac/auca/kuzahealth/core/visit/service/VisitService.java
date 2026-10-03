@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
@@ -39,6 +40,7 @@ public class VisitService {
     private final ParentRepository parentRepository;
     private final NotificationService notificationService;
     private final SoftDeleter softDeleter;
+    private final CaseloadGuard caseloadGuard;
 
     @Transactional
     public Visit createVisit(VisitRequest request) {
@@ -88,24 +90,29 @@ public class VisitService {
 
     @Transactional(readOnly = true)
     public Optional<Visit> getVisitById(UUID id) {
-        return visitRepository.findById(id);
+        Optional<Visit> visit = visitRepository.findById(id);
+        visit.ifPresent(found -> caseloadGuard.check(found.getParent()));
+        return visit;
     }
 
     @Transactional(readOnly = true)
     public List<Visit> getVisitByParentId(UUID id) {
-        return visitRepository.findByParent_Id(id);
+        return caseloadGuard.filter(visitRepository.findByParent_Id(id), Visit::getParent);
     }
 
     @Transactional(readOnly = true)
     public List<Visit> getAllVisits() {
-        return visitRepository.findAll();
+        return caseloadGuard.filter(visitRepository.findAll(), Visit::getParent);
     }
 
     @Transactional(readOnly = true)
     public Page<Visit> search(VisitStatus status, UUID healthWorkerId, UUID parentId, Date from, Date to,
             Pageable pageable) {
+        Optional<UUID> restrictedTo = caseloadGuard.restrictedTo();
         Specification<Visit> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            restrictedTo.ifPresent(workerId -> predicates.add(
+                    cb.equal(root.get("parent").get("assignedHealthWorker").get("id"), workerId)));
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));
             }
@@ -131,9 +138,9 @@ public class VisitService {
     public List<Visit> upcoming(UUID healthWorkerId, int days) {
         Date now = new Date();
         Date until = new Date(now.getTime() + TimeUnit.DAYS.toMillis(Math.max(days, 1)));
-        return visitRepository.findAll(forWorker(healthWorkerId, (root, query, cb) -> cb.and(
+        return caseloadGuard.filter(visitRepository.findAll(forWorker(healthWorkerId, (root, query, cb) -> cb.and(
                 cb.equal(root.get("status"), VisitStatus.SCHEDULED),
-                cb.between(root.get("scheduledTime"), now, until))), Sort.by("scheduledTime"));
+                cb.between(root.get("scheduledTime"), now, until))), Sort.by("scheduledTime")), Visit::getParent);
     }
 
     /**
@@ -143,12 +150,12 @@ public class VisitService {
     @Transactional(readOnly = true)
     public List<Visit> missed(UUID healthWorkerId, long graceHours) {
         Date cutoff = new Date(System.currentTimeMillis() - TimeUnit.HOURS.toMillis(graceHours));
-        return visitRepository.findAll(forWorker(healthWorkerId, (root, query, cb) -> cb.or(
+        return caseloadGuard.filter(visitRepository.findAll(forWorker(healthWorkerId, (root, query, cb) -> cb.or(
                 cb.equal(root.get("status"), VisitStatus.MISSED),
                 cb.and(cb.equal(root.get("status"), VisitStatus.SCHEDULED),
                         cb.isNull(root.get("actualStartTime")),
                         cb.lessThan(root.get("scheduledTime"), cutoff)))),
-                Sort.by(Sort.Direction.DESC, "scheduledTime"));
+                Sort.by(Sort.Direction.DESC, "scheduledTime")), Visit::getParent);
     }
 
     private static Specification<Visit> forWorker(UUID healthWorkerId, Specification<Visit> spec) {
@@ -203,8 +210,10 @@ public class VisitService {
     }
 
     public Visit requireVisit(UUID id) {
-        return visitRepository.findById(id)
+        Visit visit = visitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Visit not found"));
+        caseloadGuard.check(visit.getParent());
+        return visit;
     }
 
     private HealthWorker findHealthWorker(UUID id) {
@@ -213,8 +222,10 @@ public class VisitService {
     }
 
     private Parent findParent(UUID id) {
-        return parentRepository.findById(id)
+        Parent parent = parentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parent not found"));
+        caseloadGuard.check(parent);
+        return parent;
     }
 
     private static void require(Object value, String field) {

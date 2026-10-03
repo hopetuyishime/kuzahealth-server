@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
 import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
@@ -49,6 +50,7 @@ public class AncService {
     private final PregnancyRecordRepository pregnancyRecordRepository;
     private final VisitRepository visitRepository;
     private final HealthWorkerRepository healthWorkerRepository;
+    private final CaseloadGuard caseloadGuard;
 
     /** Gestational weeks of the recommended contacts (WHO 2016 model: eight contacts). */
     @Value("${app.anc.contact-weeks:12,20,26,30,34,36,38,40}")
@@ -67,7 +69,8 @@ public class AncService {
     public List<AncPlan> highRisk() {
         LocalDate today = today();
         Date earliestLmp = Dates.toDate(today.minusDays(ACTIVE_UNTIL_DAYS));
-        return pregnancyRecordRepository.findByLastMenstrualPeriodGreaterThanEqual(earliestLmp).stream()
+        return caseloadGuard.filter(pregnancyRecordRepository.findByLastMenstrualPeriodGreaterThanEqual(earliestLmp),
+                PregnancyRecord::getParent).stream()
                 .map(record -> plan(record, today))
                 .filter(plan -> plan.active() && !plan.riskFlags().isEmpty())
                 .sorted((a, b) -> a.expectedDeliveryDate().compareTo(b.expectedDeliveryDate()))
@@ -216,8 +219,10 @@ public class AncService {
     }
 
     private PregnancyRecord findRecord(UUID id) {
-        return pregnancyRecordRepository.findById(id)
+        PregnancyRecord record = pregnancyRecordRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pregnancy record not found with id: " + id));
+        caseloadGuard.check(record.getParent());
+        return record;
     }
 
     private LocalDate today() {

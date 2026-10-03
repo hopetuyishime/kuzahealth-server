@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,9 +60,12 @@ public class ParentController {
     public PageResponse<Parent> search(@RequestParam(required = false) String q,
             @RequestParam(required = false) String district,
             @RequestParam(required = false) Boolean highRisk,
+            @RequestParam(required = false) UUID assignedHealthWorkerId,
+            @RequestParam(required = false) Boolean unassigned,
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String sort) {
-        return PageResponse.of(parentService.search(q, district, highRisk, PageRequests.of(page, size, sort)));
+        return PageResponse.of(parentService.search(q, district, highRisk, assignedHealthWorkerId, unassigned,
+                PageRequests.of(page, size, sort)));
     }
 
     @GetMapping("/{id}")
@@ -95,6 +99,16 @@ public class ParentController {
         } else {
             return new ResponseEntity<>(new MessageResponse("Parent not found.", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
         }
+    }
+
+    /** Assigns the parent to a health worker's caseload; a null healthWorkerId unassigns her. */
+    @PutMapping("/{id}/assignment")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Parent assign(@PathVariable UUID id, @RequestBody AssignmentRequest request) {
+        return parentService.assign(id, request.healthWorkerId());
+    }
+
+    public record AssignmentRequest(UUID healthWorkerId) {
     }
 
     /** Records that the parent gave or withdrew consent. Withdrawing SMS consent stops all messages to her. */

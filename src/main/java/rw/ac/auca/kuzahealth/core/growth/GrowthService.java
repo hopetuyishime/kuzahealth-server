@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
 import rw.ac.auca.kuzahealth.core.growth.GrowthReference.Sex;
@@ -35,6 +36,7 @@ public class GrowthService {
     private final InfantRepository infantRepository;
     private final GrowthReference reference;
     private final SoftDeleter softDeleter;
+    private final CaseloadGuard caseloadGuard;
 
     @Transactional
     public GrowthAssessment record(UUID infantId, GrowthMeasurementRequest request, String recordedBy) {
@@ -171,12 +173,16 @@ public class GrowthService {
     }
 
     private Infant findInfant(UUID infantId) {
-        return infantRepository.findById(infantId)
+        Infant infant = infantRepository.findById(infantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Infant not found with id: " + infantId));
+        caseloadGuard.check(infant.getMother());
+        return infant;
     }
 
     private GrowthMeasurement findMeasurement(UUID id) {
-        return measurementRepository.findById(id)
+        GrowthMeasurement measurement = measurementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Growth measurement not found with id: " + id));
+        caseloadGuard.check(measurement.getInfant().getMother());
+        return measurement;
     }
 }

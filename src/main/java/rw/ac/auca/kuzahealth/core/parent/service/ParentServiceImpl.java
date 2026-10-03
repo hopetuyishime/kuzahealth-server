@@ -2,6 +2,7 @@ package rw.ac.auca.kuzahealth.core.parent.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -12,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
+import rw.ac.auca.kuzahealth.core.healthworker.repository.HealthWorkerRepository;
 import rw.ac.auca.kuzahealth.core.parent.consent.ConsentRecord;
 import rw.ac.auca.kuzahealth.core.parent.consent.ConsentRecordRepository;
 import rw.ac.auca.kuzahealth.core.parent.consent.ConsentType;
@@ -27,12 +30,17 @@ public class ParentServiceImpl {
 
     private final ParentRepository parentRepository;
     private final SoftDeleter softDeleter;
+    private final CaseloadGuard caseloadGuard;
+    private final HealthWorkerRepository healthWorkerRepository;
     private final ConsentRecordRepository consentRecordRepository;
 
     @Transactional
     public Parent registerParent(ParentRequest request, String recordedBy) {
         Parent parent = new Parent();
         apply(request, parent);
+        // A health worker who registers a parent takes her into their own caseload
+        caseloadGuard.currentHealthWorkerId()
+                .ifPresent(workerId -> parent.setAssignedHealthWorker(healthWorkerRepository.getReferenceById(workerId)));
         Parent saved = parentRepository.save(parent);
         if (request.getSmsConsent() != null) {
             recordConsent(saved.getId(), ConsentType.SMS, request.getSmsConsent(), "Recorded at registration",
@@ -43,13 +51,21 @@ public class ParentServiceImpl {
 
     @Transactional(readOnly = true)
     public List<Parent> getAllParents() {
-        return parentRepository.findAll();
+        return caseloadGuard.filter(parentRepository.findAll(), parent -> parent);
     }
 
     @Transactional(readOnly = true)
-    public Page<Parent> search(String q, String district, Boolean highRisk, Pageable pageable) {
+    public Page<Parent> search(String q, String district, Boolean highRisk, UUID assignedHealthWorkerId,
+            Boolean unassigned, Pageable pageable) {
+        Optional<UUID> restrictedTo = caseloadGuard.restrictedTo();
         Specification<Parent> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            UUID workerId = restrictedTo.orElse(assignedHealthWorkerId);
+            if (workerId != null) {
+                predicates.add(cb.equal(root.get("assignedHealthWorker").get("id"), workerId));
+            } else if (Boolean.TRUE.equals(unassigned)) {
+                predicates.add(cb.isNull(root.get("assignedHealthWorker")));
+            }
             if (q != null && !q.isBlank()) {
                 String like = "%" + q.trim().toLowerCase() + "%";
                 predicates.add(cb.or(
@@ -72,7 +88,11 @@ public class ParentServiceImpl {
     /** @return the parent, or null when there is none with this id */
     @Transactional(readOnly = true)
     public Parent getParentById(UUID id) {
-        return id == null ? null : parentRepository.findById(id).orElse(null);
+        Parent parent = id == null ? null : parentRepository.findById(id).orElse(null);
+        if (parent != null) {
+            caseloadGuard.check(parent);
+        }
+        return parent;
     }
 
     @Transactional(readOnly = true)
@@ -102,11 +122,21 @@ public class ParentServiceImpl {
     /** Marks the parent and everything recorded for her (infants, visits, pregnancies) as deleted. */
     @Transactional
     public boolean deleteParent(UUID id) {
-        if (parentRepository.existsById(id)) {
+        if (getParentById(id) != null) {
             softDeleter.deleteParent(id);
             return true;
         }
         return false;
+    }
+
+    /** Puts the parent in a health worker's caseload, or takes her out of any when the id is null. */
+    @Transactional
+    public Parent assign(UUID parentId, UUID healthWorkerId) {
+        Parent parent = requireParent(parentId);
+        parent.setAssignedHealthWorker(healthWorkerId == null ? null
+                : healthWorkerRepository.findById(healthWorkerId)
+                        .orElseThrow(() -> new ResourceNotFoundException("HealthWorker not found")));
+        return parentRepository.save(parent);
     }
 
     /** Records a consent decision and, for SMS, switches messaging on or off for the parent. */

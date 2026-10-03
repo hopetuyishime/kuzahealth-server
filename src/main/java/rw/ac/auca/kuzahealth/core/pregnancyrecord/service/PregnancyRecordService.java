@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.exception.DuplicateResourceException;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
@@ -30,6 +31,7 @@ public class PregnancyRecordService {
     private final PregnancyRecordRepository pregnancyRecordRepository;
     private final ParentRepository parentRepository;
     private final SoftDeleter softDeleter;
+    private final CaseloadGuard caseloadGuard;
 
     public PregnancyRecord createPregnancyRecord(PregnancyRecordDto request) {
         if (request.getParentId() == null) {
@@ -37,6 +39,7 @@ public class PregnancyRecordService {
         }
         Parent parent = parentRepository.findById(request.getParentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parent not found with id: " + request.getParentId()));
+        caseloadGuard.check(parent);
 
         if (request.getLastMenstrualPeriod() != null && pregnancyRecordRepository
                 .existsByParent_IdAndLastMenstrualPeriod(parent.getId(), request.getLastMenstrualPeriod())) {
@@ -65,13 +68,16 @@ public class PregnancyRecordService {
 
     @Transactional(readOnly = true)
     public PregnancyRecord getPregnancyRecord(UUID id) {
-        return pregnancyRecordRepository.findById(id)
+        PregnancyRecord record = pregnancyRecordRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Pregnancy record not found with id: " + id));
+        caseloadGuard.check(record.getParent());
+        return record;
     }
 
     @Transactional(readOnly = true)
     public List<PregnancyRecord> getAllPregnancyRecordsByParent(UUID parentId) {
-        return pregnancyRecordRepository.findByParent_IdOrderByCreatedAtDesc(parentId);
+        return caseloadGuard.filter(pregnancyRecordRepository.findByParent_IdOrderByCreatedAtDesc(parentId),
+                PregnancyRecord::getParent);
     }
 
     public void deletePregnancyRecord(UUID id) {
@@ -80,7 +86,7 @@ public class PregnancyRecordService {
 
     @Transactional(readOnly = true)
     public List<PregnancyRecord> getAllPregnancyRecords() {
-        return pregnancyRecordRepository.findAll();
+        return caseloadGuard.filter(pregnancyRecordRepository.findAll(), PregnancyRecord::getParent);
     }
 
     @Transactional(readOnly = true)

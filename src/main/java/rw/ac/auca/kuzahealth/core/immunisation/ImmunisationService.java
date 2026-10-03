@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.exception.DuplicateResourceException;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
@@ -40,6 +41,7 @@ public class ImmunisationService {
     private final VaccineScheduleItemRepository scheduleRepository;
     private final InfantRepository infantRepository;
     private final VaccinationRepository vaccinationRepository;
+    private final CaseloadGuard caseloadGuard;
 
     @Value("${app.immunisation.overdue-after-days:28}")
     private int overdueAfterDays;
@@ -97,6 +99,7 @@ public class ImmunisationService {
     public List<ScheduledDose> scheduleFor(UUID infantId) {
         Infant infant = infantRepository.findById(infantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Infant not found with id: " + infantId));
+        caseloadGuard.check(infant.getMother());
         if (infant.getDateOfBirth() == null) {
             throw new BadRequestException("The infant has no date of birth, so a schedule cannot be worked out");
         }
@@ -132,8 +135,8 @@ public class ImmunisationService {
     public List<OverdueInfant> overdue(String district) {
         LocalDate today = today();
         List<VaccineScheduleItem> schedule = getSchedule();
-        List<Infant> infants = infantRepository.findByDateOfBirthGreaterThanEqual(
-                Dates.toDate(today.minusDays(FOLLOW_UP_AGE_DAYS)));
+        List<Infant> infants = caseloadGuard.filter(infantRepository.findByDateOfBirthGreaterThanEqual(
+                Dates.toDate(today.minusDays(FOLLOW_UP_AGE_DAYS))), Infant::getMother);
         if (infants.isEmpty()) {
             return List.of();
         }

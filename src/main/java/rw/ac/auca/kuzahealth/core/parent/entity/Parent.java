@@ -2,11 +2,15 @@ package rw.ac.auca.kuzahealth.core.parent.entity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -14,6 +18,8 @@ import jakarta.persistence.TemporalType;
 import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.parent.enums.Language;
 import rw.ac.auca.kuzahealth.core.pregnancyrecord.entity.PregnancyRecord;
@@ -55,6 +61,17 @@ public class Parent extends SoftDeletableEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "preferred_language", nullable = false, length = 8)
     private Language preferredLanguage = Language.EN;
+
+    /** The health worker responsible for this parent, if one has been assigned. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_health_worker_id")
+    @JsonIgnore
+    private HealthWorker assignedHealthWorker;
+
+    @JsonProperty("assignedHealthWorkerId")
+    public UUID getAssignedHealthWorkerId() {
+        return assignedHealthWorker != null ? assignedHealthWorker.getId() : null;
+    }
 
     @OneToMany(mappedBy = "parent")
     @JsonIgnore

@@ -3,6 +3,7 @@ package rw.ac.auca.kuzahealth.core.vaccination.service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
+import rw.ac.auca.kuzahealth.core.caseload.CaseloadGuard;
 import rw.ac.auca.kuzahealth.core.exception.BadRequestException;
 import rw.ac.auca.kuzahealth.core.immunisation.ImmunisationService;
 import rw.ac.auca.kuzahealth.core.immunisation.VaccineScheduleItem;
@@ -49,6 +51,7 @@ public class VaccinationServiceImpl implements VaccinationService {
     private final MailService mailService;
     private final NotificationService notificationService;
     private final SoftDeleter softDeleter;
+    private final CaseloadGuard caseloadGuard;
     private final ImmunisationService immunisationService;
 
     @Override
@@ -75,21 +78,26 @@ public class VaccinationServiceImpl implements VaccinationService {
     @Override
     @Transactional(readOnly = true)
     public Vaccination findById(UUID id) {
-        return vaccinationRepository.findById(id)
+        Vaccination vaccination = vaccinationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vaccination not found with id: " + id));
+        caseloadGuard.check(vaccination.getInfant().getMother());
+        return vaccination;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Vaccination> findAll() {
-        return vaccinationRepository.findAll();
+        return inCaseload(vaccinationRepository.findAll());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<Vaccination> search(UUID infantId, UUID healthWorkerId, Pageable pageable) {
+        Optional<UUID> restrictedTo = caseloadGuard.restrictedTo();
         Specification<Vaccination> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+            restrictedTo.ifPresent(workerId -> predicates.add(
+                    cb.equal(root.get("infant").get("mother").get("assignedHealthWorker").get("id"), workerId)));
             if (infantId != null) {
                 predicates.add(cb.equal(root.get("infant").get("id"), infantId));
             }
@@ -104,37 +112,37 @@ public class VaccinationServiceImpl implements VaccinationService {
     @Override
     @Transactional(readOnly = true)
     public List<Vaccination> findByInfant(Infant infant) {
-        return vaccinationRepository.findByInfant(infant);
+        return inCaseload(vaccinationRepository.findByInfant(infant));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Vaccination> findByInfantId(UUID infantId) {
-        return vaccinationRepository.findByInfant_Id(infantId);
+        return inCaseload(vaccinationRepository.findByInfant_Id(infantId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Vaccination> findByHealthWorker(HealthWorker healthWorker) {
-        return vaccinationRepository.findByHealthWorker(healthWorker);
+        return inCaseload(vaccinationRepository.findByHealthWorker(healthWorker));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Vaccination> findByHealthWorkerId(UUID healthWorkerId) {
-        return vaccinationRepository.findByHealthWorker_Id(healthWorkerId);
+        return inCaseload(vaccinationRepository.findByHealthWorker_Id(healthWorkerId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Vaccination> findByParentId(UUID parentId) {
-        return vaccinationRepository.findByParentId(parentId);
+        return inCaseload(vaccinationRepository.findByParentId(parentId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Vaccination> findDueVaccinations(Date date) {
-        return vaccinationRepository.findByNextDueDateLessThanEqualAndNotificationSentFalse(date);
+        return inCaseload(vaccinationRepository.findByNextDueDateLessThanEqualAndNotificationSentFalse(date));
     }
 
     @Override
@@ -160,6 +168,7 @@ public class VaccinationServiceImpl implements VaccinationService {
     private void apply(VaccinationRequest request, Vaccination vaccination) {
         Infant infant = infantRepository.findById(request.getInfantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Infant not found with id: " + request.getInfantId()));
+        caseloadGuard.check(infant.getMother());
         HealthWorker healthWorker = healthWorkerRepository.findById(request.getHealthWorkerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Health Worker not found with id: " + request.getHealthWorkerId()));
 
@@ -187,6 +196,10 @@ public class VaccinationServiceImpl implements VaccinationService {
                     .ifPresent(next -> vaccination.setNextDueDate(Dates.toDate(next)));
         }
         vaccination.setNotes(request.getNotes());
+    }
+
+    private List<Vaccination> inCaseload(List<Vaccination> vaccinations) {
+        return caseloadGuard.filter(vaccinations, vaccination -> vaccination.getInfant().getMother());
     }
 
     private static String infantName(Infant infant) {
