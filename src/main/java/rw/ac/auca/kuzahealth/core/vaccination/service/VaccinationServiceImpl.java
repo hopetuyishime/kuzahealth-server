@@ -11,7 +11,7 @@ import rw.ac.auca.kuzahealth.core.healthworker.entity.HealthWorker;
 import rw.ac.auca.kuzahealth.core.healthworker.repository.HealthWorkerRepository;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.repository.InfantRepository;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.exception.ResourceNotFoundException;
+import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
 import rw.ac.auca.kuzahealth.core.vaccination.dto.VaccinationRequest;
 import rw.ac.auca.kuzahealth.core.vaccination.entity.Vaccination;
 import rw.ac.auca.kuzahealth.core.vaccination.repository.VaccinationRepository;

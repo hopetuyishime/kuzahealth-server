@@ -1,4 +1,4 @@
-package rw.ac.auca.kuzahealth.core.pregancyrecord.exception;
+package rw.ac.auca.kuzahealth.core.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

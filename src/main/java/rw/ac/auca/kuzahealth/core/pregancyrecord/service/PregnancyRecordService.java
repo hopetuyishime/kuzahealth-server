@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rw.ac.auca.kuzahealth.core.pregancyrecord.entity.PregnancyRecord;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.exception.DuplicateResourceException;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.exception.ResourceNotFoundException;
+import rw.ac.auca.kuzahealth.core.exception.DuplicateResourceException;
+import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
 import rw.ac.auca.kuzahealth.core.pregancyrecord.repository.PregnancyRecordRepository;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
 

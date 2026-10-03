@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import rw.ac.auca.kuzahealth.core.infant.entity.Infant;
 import rw.ac.auca.kuzahealth.core.infant.repository.InfantRepository;
 import rw.ac.auca.kuzahealth.core.parent.entity.Parent;
-import rw.ac.auca.kuzahealth.core.pregancyrecord.exception.ResourceNotFoundException;
+import rw.ac.auca.kuzahealth.core.exception.ResourceNotFoundException;
 
 /**
  * Implementation of the InfantService interface

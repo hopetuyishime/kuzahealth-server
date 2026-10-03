@@ -1,35 +1,33 @@
-package rw.ac.auca.kuzahealth.controller.auth.dto;
+package rw.ac.auca.kuzahealth.controller.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import rw.ac.auca.kuzahealth.core.user.enums.EUserType;
 
+/**
+ * Partial update: only the fields that are present are changed.
+ */
 @Data
-public class RegisterRequest {
-    @NotBlank
+public class UpdateUserRequest {
     private String firstName;
-
-    @NotBlank
     private String lastName;
-
     private String username;
 
-    @NotBlank
     @Email
     private String email;
 
-    @NotBlank
     @Size(min = 8, max = 72, message = "must be between 8 and 72 characters")
     private String password;
 
-    /** Only honoured when the caller is an administrator. */
-    @JsonAlias("userType")
+    /** Administrators only. */
     private EUserType role;
+
+    /** Administrators only. */
+    private Boolean enabled;
 
     private String gender;
     private String province;
